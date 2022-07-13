@@ -60,6 +60,7 @@ vim /etc/pacman.d/mirrorlist
 新版的镜像会提供不同国家的镜像源，直接将合适的源粘贴到首行即可，这里提供几个源
 
 ``` bash
+Server = https://mirrors.163.com/archlinux/$repo/os/$arch				#163源
 Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch			#中科大
 Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch	#清华
 Server = https://mirror.0xem.ma/arch/$repo/os/$arch    #北美洲地区:加拿大
