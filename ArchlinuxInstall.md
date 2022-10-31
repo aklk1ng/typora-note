@@ -1,5 +1,36 @@
 # Archlinux-KDE-Install
 
+<!-- vim-markdown-toc GFM -->
+
+* [1. 连接网络(wifi)](#1-连接网络wifi)
+* [2.更新系统时钟](#2更新系统时钟)
+* [3.分区](#3分区)
+* [4.格式化](#4格式化)
+* [5.挂载](#5挂载)
+* [6.镜像源的选择](#6镜像源的选择)
+* [7.安装系统](#7安装系统)
+* [8.生成fstab文件](#8生成fstab文件)
+* [9.切换到安装好的系统](#9切换到安装好的系统)
+* [10.时区设置](#10时区设置)
+* [11.设置Locale进行本地化](#11设置locale进行本地化)
+* [12.设置主机名](#12设置主机名)
+* [13.设置root用户密码](#13设置root用户密码)
+* [14.安装微码](#14安装微码)
+* [15.安装引导程序](#15安装引导程序)
+* [16.完成无界面安装](#16完成无界面安装)
+* [17.再次配置](#17再次配置)
+* [18.开启32位支持库](#18开启32位支持库)
+* [19.添加普通用户](#19添加普通用户)
+* [20.添加archlinuxcn源(非必要,只是多一些国人更常用的软件)](#20添加archlinuxcn源非必要只是多一些国人更常用的软件)
+* [21.安装显卡驱动](#21安装显卡驱动)
+* [22.安装桌面环境](#22安装桌面环境)
+* [23.设置系统中文](#23设置系统中文)
+* [24.安装yay](#24安装yay)
+* [25.重启（欢迎来到archlinux :joy:）](#25重启欢迎来到archlinux-joy)
+* [26.安装输入法(有一些可能是找不到的)](#26安装输入法有一些可能是找不到的)
+* [27.启动蓝牙](#27启动蓝牙)
+
+<!-- vim-markdown-toc -->
 ### 1. 连接网络(wifi)
 
 ``` bash
@@ -70,9 +101,9 @@ Server = https://mirrors.cat.net/archlinux/$repo/os/$arch    #东亚地区:日�
 ```
 
 ### 7.安装系统
-
+[my neovim config](https://github.com/aklk1ng/nvim.git)
 ``` bash
-pacstrap /mnt base base-devel linux linux-headers linux-firmware dhcpcd vim dialog networkmanager netctl #base-devel在AUR包的安装是必须的
+pacstrap /mnt base base-devel linux linux-headers linux-firmware dhcpcd vim neovim dialog networkmanager netctl #base-devel在AUR包的安装是必须的
 ```
 
 ### 8.生成fstab文件
@@ -99,6 +130,7 @@ hwclock --systohc		#对硬件进行时间设置，将正确的UTC时间写入硬
 ### 11.设置Locale进行本地化
 
 ``` bash
+--使用vim进行编辑，后续才会进行下载(sudo pacman -S vim)
 vim /etc/locale.gen								#去掉 en_US.UTF-8 所在行以及 zh_CN.UTF-8 所在行的注释符号（#）
 locale-gen										#生成 locale
 echo 'LANG=en_US.UTF-8'  > /etc/locale.conf		#向 /etc/locale.conf 导入内容
@@ -136,7 +168,7 @@ grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
 grub-mkconfig -o /boot/grub/grub.cfg			#生成 GRUB 所需的配置文件
 ```
 
-**os-prober需要手动安装，在/etc/dafault/grub中，取消GRUB_DISABLE_OS_PROBER=false的注释，这样在开机时进入bios中将grub的启动项设置为最高优先级，即可进入grub选择操作系统界面**
+**os-prober需要手动安装，在/etc/dafault/grub中，取消GRUB_DISABLE_OS_PROBER=false的注释，这样在开机时进入bios中将grub的启动项设置为最高优先级，即可进入grub选择操作系统界面,并可以选择windows系统**
 
 ### 16.完成无界面安装
 
@@ -163,7 +195,7 @@ vim /etc/fstab
 #添加以下内容：/swapfile none swap defaults 0 0
 ```
 
-### 18.开启32为支持库
+### 18.开启32位支持库
 
 ``` bash
 vim /etc/pacman.conf			#去掉[multilib]一节中两行的注释，来开启 32 位库支持
@@ -177,10 +209,10 @@ useradd -m -G wheel YOUR-NAME		#wheel为所属用户组
 passwd YOUR-NAME
 pacman -S sudo
 sudo vim /etc/sudoers				#若还是无法修改需更改文件权限
-#取消wheel行的注释
+取消wheel行的注释
 ```
 
-### 20.添加archlinuxcn源
+### 20.添加archlinuxcn源(非必要,只是多一些国人更常用的软件)
 
 ``` bash
 su YOUR-NAME
@@ -200,14 +232,15 @@ sudo pacman -S xf86-video-intel mesa		#intel用户,其他显卡可以在archlinu
 ```
 
 ### 22.安装桌面环境
-
+**非必要，你可以使用window managers such as i3wm--what i used, dwm--what i use now, bspwm--what i haven't used and so on**
 ``` bash
+--- kde
 sudo pacman -S xorg plasma kde-applications sddm network-manager-applet	#桌面基础包
 sudo systemctl enable sddm				#允许登陆欢迎服务
 sudo systemctl enable NetworkManager	#允许网络服务
 ```
 
-**基础功能包**
+**基础功能包(可选则性安装)**
 
 ``` bash
 sudo pacman -S sof-firmware alsa-firmware alsa-ucm-conf                     #一些可能需要的声音固件
@@ -238,7 +271,7 @@ LANG=zh_CN.UTF-8
 #对go进行换源,github相对来说好一些，实在不行修改hosts：
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
-#or：
+#or(推荐)：
 echo "export GO111MODULE=on" >> ~/.profile
 echo "export GOPROXY=https://goproxy.cn" >> ~/.profile
 source ~/.profile
@@ -248,13 +281,13 @@ cd yay
 makepkg -si
 ```
 
-### 25.重启（欢迎来到archlinux-KDE）
+### 25.重启（欢迎来到archlinux :joy:）
 
 ```bash
 sudo reboot
 ```
 
-### 26.安装输入法
+### 26.安装输入法(有一些可能是找不到的)
 
 ``` bash
 sudo pacman -S fcitx5-im #基础包组
@@ -272,7 +305,7 @@ XMODIFIERS=@im=fcitx5
 SDL_IM_MODULE=fcitx5
 ```
 
-**可能要重启后才能开始使用fcitx5输入法**
+**可能要重启后才能开始使用fcitx5输入法,如果你没有使用桌面环境，可以使用 fcitx5-configtool 工具来进行配置**
 
 * 打开 *系统设置* > *区域设置* > _输入法_，先点击`运行Fcitx`即可，拼音为默认添加项
 * 接下来点击 *拼音* 右侧的配置按钮，点选`云拼音`和`在程序中显示预编辑文本` 最后应用
@@ -288,4 +321,3 @@ sudo systemctl enable --now bluetooth
 sudo pacman -S pulseaudio-bluetooth
 pulseaudio -k
 ```
-
