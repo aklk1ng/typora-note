@@ -101,17 +101,26 @@ DELETE FROM 表名 [WHERE 条件]
 SELECT 字段列表
 FROM 
     表名列表
-WHERE 
+WHERE -- 分组前进行过滤,不可对聚合函数过滤
     条件列表
 GROUP BY 
     分组字段列表
-HAVING 
+HAVING -- 分组后对结果进行过滤,可对聚合函数过滤
     分组后条件列表
 ORDER BY 
-    排序字段列表
+    排序字段列表 -- (字段1 排序方式1, 字段2 排序方式2)
+    ASC:升序
+    DESC：降序
 LIMIT 
-    分页参数
-DISTINCT 字段列表 -- 去重
+    分页参数(起始索引，查询记录数) -- 索引默认从0开始
+DISTINCT 字段列表 -- 去重操作
 LIKE _代表占位符，%代表任意一个字符
 ```
 > select distinct age from worker;
+| function | Function |
+|----------|----------|
+| count    | 统计数量 |
+| max      | 最大值   |
+| min      | 最小值   |
+| avg      | 平均值   |
+| sum      | 求和     |
