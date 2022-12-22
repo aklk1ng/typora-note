@@ -20,7 +20,7 @@ USE _NAME 数据库名
 ### 数据库表操作
 * query
 ```sql
-SHOW TABLES; -- query current databse's tables
+SHOW TABLES; -- query current database's tables
 DESC table_name; -- query table structure
 SHOW CREATE TABLE 表名; -- query exists table structure in detail
 ```
@@ -124,3 +124,113 @@ LIKE _代表占位符，%代表任意一个字符
 | min      | 最小值   |
 | avg      | 平均值   |
 | sum      | 求和     |
+
+# DCL
+* query user
+```sql
+USE mysql;
+SELECT * FROM user;
+```
+* create localhost user(use the % to let user access the database on any host)
+```sql
+CREATE USER 'name'@'localhost' IDENTIFIED BY 'password';
+```
+* change the user's password
+```sql
+ALTER USER 'name'@'localhost' IDENTIFIED WITH mysql_native_password BY 'new_password';
+```
+* delete user
+```sql
+DROP USER 'name'@'localhost';
+```
+* query permissions
+```sql
+SHOW GRANTS FO 'name'@'localhost';
+```
+* give permissions
+```sql
+GRANT 权限列表 ON 数据库名.表名 TO 'name'@'localhost';
+```
+* delete permissions
+```sql
+REVOKE 权限列表ON 数据库名.表名 FROM 'name'@'localhost'; 
+```
+
+| permissions        | description              |
+|--------------------|--------------------------|
+| ALL,ALL PRIVILEGES | all permissions          |
+| SELECT             | query permissions        |
+| INSERT             | insert permissions       |
+| UPDATE             | modify permissions       |
+| DELETE             | delete permissions       |
+| ALTER              | MODIFY table permissions |
+| DROP               | delete database/table    |
+| CREATE             | create database/table    |
+
+# function
+| string                   | description                                     |
+|--------------------------|-------------------------------------------------|
+| CONCAT(s1,s2,...sn)      | 字符串拼接                                      |
+| LOWER(str)               | 字符串转小写                                    |
+| UPPER(str)               | 字符串转大写                                    |
+| LPAD(str,n,pad)          | 左填充                                          |
+| RPAD(str,n,pad)          | 右填充                                          |
+| TRIM(str)                | 去掉字符串头部和尾部的空格                      |
+| SUBSTRING(str,start,len) | 返回从字符串str从start位置起的len个长度的字符串 |
+
+> select lpad('01',5,'-');
+
+| number     | description                        |
+|------------|------------------------------------|
+| CEIL(x)    | 向上取整                           |
+| FLOOR(x)   | 向下取整                           |
+| MOD(x,y)   | 返回x/y的摸                        |
+| RAND()     | 返回0～1内的随机数                 |
+| ROUND(x,y) | 求参数x的四舍五入的指，保留y位小数 |
+
+> select roun(2.3444,2);
+
+| date                              | description                                     |
+|-----------------------------------|-------------------------------------------------|
+| CURDATE()                         | 返回当前日期                                    |
+| CURTIME()                         | 返回当前时间                                    |
+| NOW()                             | 返回当前日期和时间                              |
+| YEAR(date)                        | 获取date的年份                                  |
+| MONTH(date)                       | 获取date的月份                                  |
+| DAY(date)                         | 获取date的日期                                  |
+| DATE_ADD(date,INTERVAL expr type) | 返回一个日期/时间值加上一个时间间隔expr的时间值 |
+| DATEDIFF(date1,date2)             | 返回起始时间date1与结束时间date2之间的天数      |
+
+> select name,datediff(curdate(),entrydate) entrydays from worker order by entrydays asc;
+
+| process                                                    | description                                          |
+|------------------------------------------------------------|------------------------------------------------------|
+| IF(value,t,f)                                              | 如果value为true，则返回t,否则为f                     |
+| IFNULL(value1,value2)                                      | 如果value1不为空，返回value1，否则返回value2         |
+| CASE [expr] WHEN [val1] THEN [res1] ... ELSE [default] END | 如果expr等于val1，返回res1，...否则返回default默认值 |
+
+# constraint
+| constraint | description                                            | key         |
+|------------|--------------------------------------------------------|-------------|
+| 非空约束   | 限制该字段的数据不为null                               | NOT NULL    |
+| 唯一约束   | 保证该字段的数据唯一                                   | UNIQUE      |
+| 主键约束   | 主键是一行数据的唯一标识                               | PRIMARY KEY |
+| 默认约束   | 保存数据时，如果未指定该字段的指，则用默认值           | DEFAULT     |
+| 检查约束   | 保证字段之满足某一个条件                               | CHECK       |
+| 外键约束   | 使得两张表的数据之间建立连接，保证数据的一致性和完整性 | FOREIGN KEY |
+
+> create table user(id int primary key auto_increment comment'主键', name varchar(10) not null unique comment '姓名',age int comment '年龄' check (age > 0 && age <= 120) ,status char(1) default '1' comment '状态',gender char(1) comment '性别') comment '用户表';
+
+* add foreign key
+```sql
+CREATE TABLE 表名(
+    字段名 数据类型,
+    ...
+    [CONSTRAINT] [外键名称] FOREIGN KEY(外键字段名) REFERNCES 主表(主表列名)
+);
+ALTER TABLE 表名 ADD CONSTRAINT 外键名称 FOREIGN KEY(外键字段名) REFERNCES 主表(主表列名);
+```
+* delete foreign key
+```sql
+ALTER TABLE 表名DROP FOREIGN KEY 外键名称;  
+```
