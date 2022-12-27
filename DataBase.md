@@ -234,3 +234,24 @@ ALTER TABLE 表名 ADD CONSTRAINT 外键名称 FOREIGN KEY(外键字段名) REFE
 ```sql
 ALTER TABLE 表名DROP FOREIGN KEY 外键名称;  
 ```
+# multi-table query
+* one-to-many
+> 多的方面构建外键
+* many to many
+> 建立第三张中间表，中间表至少包含两个外键，分别关联两方主键
+* one-to-one
+> 用于单表拆分，基础字段和其他详细字段分开存放
+* query
+    * 连接查询
+        * 内连接：查询交集部分数据
+        ```sql
+        -- 隐式内连接
+        SELECT 字段列表 FROM 表1,表2 WHERE 条件 ...;
+        -- 显式内连接
+        SELECT 字段列表 FROM 表1 [INNER] JOIN 表2 ON 连接条件 ...;
+        ```
+        * 外连接：
+            * 左外连接：查询左表所有数据，以及两张表交集部分的数据
+            * 右外连接：查询右表所有数据，以及两张表交集部分的数据
+        * 自连接：当前表与自身的连接查询，自连接必须使用表别名
+    * 子查询
