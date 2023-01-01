@@ -234,6 +234,7 @@ ALTER TABLE 表名 ADD CONSTRAINT 外键名称 FOREIGN KEY(外键字段名) REFE
 ```sql
 ALTER TABLE 表名DROP FOREIGN KEY 外键名称;  
 ```
+
 # multi-table query
 * one-to-many
 > 多的方面构建外键
@@ -252,6 +253,160 @@ ALTER TABLE 表名DROP FOREIGN KEY 外键名称;
         ```
         * 外连接：
             * 左外连接：查询左表所有数据，以及两张表交集部分的数据
+            ```sql
+            SELECT 字段列表 FROM 表1 LEFT [OUTER] JOIN 表2 ON 条件...;
+            ```
             * 右外连接：查询右表所有数据，以及两张表交集部分的数据
+            ```sql
+            SELECT 字段列表 FROM 表1 RIGHT [OUTER] JOIN 表2 ON 条件...;
+            ```
         * 自连接：当前表与自身的连接查询，自连接必须使用表别名
-    * 子查询
+            ```sql
+            SELECT 字段列表 FROM 表1 别名1 JOIN 表2 别名2 ON 条件...;
+            ```
+    * 联合查询(字段列表需完全相同)
+    ```sql
+    SELECT 字段列表 FROM 表1...
+    UNION [ALL] --- 去掉ALL实现去重
+    SELECT 字段列表 FROM 表1...;
+    ```
+    * 子查询(嵌套SELECT语句)
+    ```sql
+    SELECT 字段列表 FROM 表1 WHERE 字段1 = (SELECT 字段1 FROM 表2);
+    ```
+
+    > 标量子查询(子查询结果为单个值)
+
+    常用的操作符: =, <>, >, >=, <, <=
+    > 列子查询(子查询结果为一列)
+
+        常用的操作符: IN, NOT IN, ANY, SOME, ALL
+        SELECT 字段列表 FROM 表1 WHERE 字段1 > ANY (SELECT 字段1 FROM 表2 WHERE 条件...);
+    > 行子查询(子查询结果为一行)
+
+        常用的操作符: =, <>, IN, NOT IN
+        SELECT 字段列表 FROM 表1 WHERE (字段1,字段2) = (SELECT 字段1,字段2 FROM 表1 WHERE 条件...);
+    > 表子查询(子查询结果为多行多列)
+
+        常用的操作符: IN
+        SELECT 字段列表 FROM 表1 WHERE (字段1,字段2) IN (SELECT 字段1,字段2 FROM 表1 WHERE 条件...);
+
+# transaction
+## operation
+* 查看/设置事务提交方式
+```sql
+SELECT @@autocommit; -- 1
+SET @@autocommit=0; -- manually
+```
+* 开启事务
+```sql
+START TRANSACTION / BEGIN;
+```
+* 提交事务
+```sql
+COMMIT;
+```
+* 回滚事务
+```sql
+ROLLBACK;
+```
+
+## features
+* 原子性(Atomicity):事务是不可分割的最小操作单元，要么全部成功，要么全部失败
+* 一致性(Consistency):事务完成时，必须使所有的数据都保持一致
+* 隔离性(Isolation):数据库系统提供的隔离机制，保证事务在不受外界并发操作影响的独立环境下运行
+* 持久性(Durability):事务一旦提交或回滚，此改变就是永久的
+
+## problems/phenomenon
+* 赃读:在一个事务中读到另外一个事务还没有提交的数据
+* 不可重复读:在一个事务中先后读取同一条记录，但两次读取的数据不同
+* 幻读:一个事务按照条件查询数据时，没有对应的数据行，但是在插入数据时，又发现这行数据已经存在
+
+## isolation level
+| isolation level          | 脏读 | 不可重复读 | 幻读 |
+|--------------------------|------|------------|------|
+| Read uncommitted         | 1    | 1          | 1    |
+| Read committed           | 0    | 1          | 1    |
+| Repeatable Read(default) | 0    | 0          | 1    |
+| Serializable(可序列化)   | 0    | 0          | 0    |
+
+* 查看事务隔离级别
+```sql
+SELECT @@TRANSACTION_ISOLATION / @@TX_ISOLATION;
+```
+* 设置事务隔离级别
+```sql
+SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SERIALIZABLE};
+```
+
+# MySQL体系结构
+* 客户端
+* 服务端
+    * 连接层
+    * 服务层
+    * 引擎层
+    ```sql
+    CREATE TABLE table_name(
+        字段1 字段1类型[COMMENT 字段1注释],
+        字段2 字段2类型[COMMENT 字段2注释],
+        字段3 字段3类型[COMMENT 字段3注释],
+        ......
+        字段n 字段n类型[COMMENT 字段n注释] -- don need to add the ''
+    )ENGINE = INNODB [COMMENT 表注释];
+
+    SHOW ENGINES; -- 查看数据库支持的存储引擎
+    ```
+
+    **`InnoDB:`**
+
+    DML操作遵循ACID模型，支持事务
+
+    行级锁，提高并发访问性能
+
+    支持外键FOREIGN KEY 约束，保证数据的完整性和正确性
+
+        1. TableSpace:表空间
+        2. Segment:段
+        3.Extent(1M):区
+        4.Page(16K):页
+        5.Row:行
+    **`MyISAM`**
+
+    不支持事务，不支持外键
+    
+    支持表锁，不支持行锁
+
+    访问速度快
+
+    **`Memory:`**
+
+    内存存放
+
+    hash索引
+
+    | 特点             | InnoDB            | MyISAM     | Memory     |
+    | :--------------: | :---------------: | :--------: | :--------: |
+    | 存储限制         | 64TB              | 有         | 有         |
+    | 事务安全         | 支持              |            |            |
+    | 锁机制           | 行锁              | 表锁       | 表锁       |
+    | B+tree索引       | 支持              | 支持       | 支持       |
+    | Hash索引         | -                 | -          | 支持       |
+    | 全文索引         | 支持(5.6之后)     | 支持       | -          |
+    | 空间使用         | 高                | 低         | N/A        |
+    | 内存使用         | 高                | 低         | 中等       |
+    | 批量插入速度     | 低                | 高         | 高         |
+    | 支持外键         | 支持              | -          | -          |
+
+    * 存储层
+## 索引(index)
+**帮助MySQL高效获取数据的数据结构(有序)** 
+| 索引结构            | 描述                           |
+| B+Tree索引          | 最常见的索引类型               |
+| Hash索引            | 精确匹配索引，不支持范围查询   |
+| R-tree(空间索引)    | MyISAM引擎的一个特殊索引类型   |
+| Full-text(全文索引) | 通过建立倒排索引，快速匹配文档 |
+* B-Tree(多路平衡查找树)
+```text
+以一颗最大度数(子节点个数)为5的b-tree为例(每个节点最多存储4个key,5个指针)
+```
+* B+Tree
