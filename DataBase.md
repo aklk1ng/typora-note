@@ -409,4 +409,6 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
 ```text
 以一颗最大度数(子节点个数)为5的b-tree为例(每个节点最多存储4个key,5个指针)
 ```
-* B+Tree
+* B+Tree(MySQL)
+    * 所有的数据都会出现在叶子节点
+    * 叶子节点构成一个双向链表(原本为单向链表)
