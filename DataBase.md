@@ -390,7 +390,7 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
     | 事务安全         | 支持              |            |            |
     | 锁机制           | 行锁              | 表锁       | 表锁       |
     | B+tree索引       | 支持              | 支持       | 支持       |
-    | Hash索引         | -                 | -          | 支持       |
+    | Hash索引         | -(自适应)         | -          | 支持       |
     | 全文索引         | 支持(5.6之后)     | 支持       | -          |
     | 空间使用         | 高                | 低         | N/A        |
     | 内存使用         | 高                | 低         | 中等       |
@@ -405,6 +405,7 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
 | Hash索引            | 精确匹配索引，不支持范围查询   |
 | R-tree(空间索引)    | MyISAM引擎的一个特殊索引类型   |
 | Full-text(全文索引) | 通过建立倒排索引，快速匹配文档 |
+
 * B-Tree(多路平衡查找树)
 ```text
 以一颗最大度数(子节点个数)为5的b-tree为例(每个节点最多存储4个key,5个指针)
@@ -412,3 +413,54 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
 * B+Tree(MySQL)
     * 所有的数据都会出现在叶子节点
     * 叶子节点构成一个双向链表(原本为单向链表)
+* Hash
+    * 只能用于对等比较(=,in),不支持范围查(between,>,<,...)
+    * 无法利用索引完成排序操作
+    * 查询效率高，通常只需要一次检索，效率高于B+Tree索引
+
+```text
+采用一定的hash算法，将键值换算成新的hash值，映射到对应的的槽位上，然后存储在hash表中
+如果有多个键值都映射到同一个槽位上，就产生了hash冲突，可以通过链表解决
+```
+
+### 分类
+
+| 分类     | 含义                                   | 特点                     | 关键字   |
+|----------|----------------------------------------|--------------------------|----------|
+| 主键索引 | 针对于表中主键的索引                   | 默认自动创建，只能有一个 | PRIMARY  |
+| 唯一索引 | 避免同一个表中某数据列中的值重复       | 可以有多个               | UNIQUE   |
+| 常规索引 | 快速定位特定数据                       | 可以有多个               |          |
+| 全文索引 | 查找文本中的关键词，而不是比较索引的值 | 可以有多个               | FULLTEXT |
+
+* InnoDB
+    * InnoDB的指针占用6个字节
+
+| 分类     | 含义                                                       | 特点               |
+|----------|------------------------------------------------------------|--------------------|
+| 聚集索引 | 将数据存储与索引放到了一块，索引结构的叶子节点保存了行数据 | 必须有，且只有一个 |
+| 二级索引 | 将数据与索引分开存储，索引结构的叶子节点关联的是对应的主键 | 可以存在多个       |
+* 聚集索引选取规则：
+    * 如果存在主键，主键索引就是聚集索引
+    * 如果不存在主键，将使用第一个唯一(UNIQUE)索引作为聚集索引
+    * 如果表没有主键，或没有合适的唯一索引，则InnoDB会自动生成一个rowid作为隐藏的聚集索引
+```sql
+SELECT * FROM USER WHERE name = 'xxx';
+
+回表查询(此行为说明如果要获取整行数据，以主键为条件查询是效率最高的一种查询方式):
+1. 根据WHERE关键字由name的二级索引查询出对应的主键值
+2. 再根据主键值由主键的聚集索引查询这一行的数据
+```
+
+### 语法
+* create
+```sql
+CREATE [UNIQUE | FULLTEXT] INDEX index_name ON table_name (index_col_name,...);
+```
+* query
+```sql
+SHOW INDEX FROM table_name;
+```
+* delete
+```sql
+DROP INDEX index_name ON table_name;
+```
