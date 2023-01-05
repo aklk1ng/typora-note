@@ -398,6 +398,7 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
     | 支持外键         | 支持              | -          | -          |
 
     * 存储层
+
 ## 索引(index)
 **帮助MySQL高效获取数据的数据结构(有序)** 
 | 索引结构            | 描述                           |
@@ -451,6 +452,33 @@ SELECT * FROM USER WHERE name = 'xxx';
 2. 再根据主键值由主键的聚集索引查询这一行的数据
 ```
 
+### 索引使用
+
+* 最左前缀法则
+**如果索引了多列(联合索引),要遵循最左前缀法则--查询从索引的最左列开始，且不跳过索引中的列,如果跳跃某一列，索引将部分失效(后面的字段索引失效)** 
+
+* 范围查询
+**联合索引中，出现范围查询(>,<),范围查询右侧的列索引失效** 
+
+* 覆盖索引(需要查询返回的数据在索引结构中可以直接找到，不需要在回表)
+
+* 前缀索引(索引若为很长的字符串时，只将字符串的一部分前缀建立索引，节约索引空间)
+```sql
+CREATE INDEX idx_xxxx ON table_name(COLUMN(n));
+```
+
+### 索引失效
+
+* 索引列运算
+* 字符串不加引号
+* 模糊查询(如果是尾部模糊，索引不会失效，如果是头部模糊，索引会失效)
+* or连接的条件(用or连接的条件，如果or前的条件中的列有索引，而后面的列中没有索引，那么涉及的索引都会失效)
+* 数据分布影响(如果MySQL评估使用索引比全表慢，则不使用索引)
+* SQL提示(人为提示来达到优化操作的目的)
+    * use index(建议)
+    * ignore index(忽略)
+    * force index(强制)
+
 ### 语法
 * create
 ```sql
@@ -458,9 +486,57 @@ CREATE [UNIQUE | FULLTEXT] INDEX index_name ON table_name (index_col_name,...);
 ```
 * query
 ```sql
-SHOW INDEX FROM table_name;
+SHOW INDEX FROM table_name[\G];
 ```
 * delete
 ```sql
 DROP INDEX index_name ON table_name;
 ```
+
+## SQL性能分析
+
+* SQL执行频率
+```sql
+SHOW [SESSION | GLOBAL] STATUS; -- 查询服务器状态信息
+SHOW GLOBAL STATUS LIKE 'COM_______'; -- 7 个下划线
+```
+
+* 慢查询日志
+
+**慢查询日志记录了所有执行时间超过指定参数(long_query_time,单位:秒，默认10秒)的所有SQL语句的日志,需要在MySQL的配置文件(/etc/my.cnf)=配置** 
+
+```text
+slow_query_log=1 -- 开启
+long_query_time=2 -- 设置时间
+```
+
+*profile详情
+```sql
+SELECT @@have_profiling; -- 查看profiling
+SET profiling = 1; -- 开启
+SHOW PROFILES; -- 查看每一条SQL语句的耗时情况
+SHOW PROFILE FOR QUERY QUERY_ID; -- 查看指定QUERY_ID的各SQL语句各个阶段的耗时情况
+SHOW PROFILE CPU FOR QUERY QUERY_ID -- 查看指定QUERY_ID的各SQL语句CPU的使用情况
+```
+
+*explain执行计划
+```sql
+EXPLAIN/DESC SELECT 字段列表 FROM 表名 WHERE 条件;
+```
+**EXPLAIN或者DESC获取MySQL如何执行SELECT语句，包括了在SELECT语句执行过程中表如何连接和连接的顺序** 
+    * id
+        * SELECT查询的序列号，表示查询中执行SELECT子句或者是操作表的顺序(id相同，执行顺序从上往下，id不同值越大，越先执行)
+    * select_type
+        * 表示SELECT的类型，常见的取值有SIMPLE(简单表，即不使用表连接或子查询)，PRIMARY(主查询，即外层的查询)，UNION(UNION中的第二个或者后面的查询语句)，SUBQUERY(SELECT/WHERE之后包括了子查询)
+    * type
+        * 表示连接类型，性能由好到差的连接类型为NULL,system,const,eq_ref,ref,range,index,all
+    * possible_key
+        * 显示可能应用在这张表上的索引，一个或多个
+    * key
+        * 实际使用的索引
+    * key_len
+        * 表示索引中使用的字节数，该值为索引字段最大可能长度，并非实际使用长度
+    * rows
+        * MySQL认为必须要执行查询的行数，在InnoDB引擎的表中，是一个估计值
+    *filtered
+        * 表示返回结果的行户占需读取行数的百分比，该值越大越好
