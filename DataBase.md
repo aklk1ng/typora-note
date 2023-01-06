@@ -466,6 +466,7 @@ SELECT * FROM USER WHERE name = 'xxx';
 ```sql
 CREATE INDEX idx_xxxx ON table_name(COLUMN(n));
 ```
+* 单列索引优先级比联合索引更高,但联合索引对于多个查询条件的查询效率更高
 
 ### 索引失效
 
@@ -540,3 +541,261 @@ EXPLAIN/DESC SELECT 字段列表 FROM 表名 WHERE 条件;
         * MySQL认为必须要执行查询的行数，在InnoDB引擎的表中，是一个估计值
     *filtered
         * 表示返回结果的行户占需读取行数的百分比，该值越大越好
+
+## MySQL优化
+* insert优化
+    * 批量插入
+    * 手动提交事务
+    * 主键顺序插入
+* 大批量插入数据(load)
+```sql
+-- 连接客户端
+mysql --local-infile -u root -p
+-- 设置全局参数，开启从本地加载文件导入数据的开关
+set global local_infile=1;
+-- 执行load命令加载数据
+load data local infile 'ABSOLUTE_PATH' into table table_name fields terminated by ',' line terminated by '\n';
+```
+
+* 主键
+**在InnoDB存储引擎中，表数据根据主键顺序组织存放----索引组织表** 
+    * 页分裂(出现在主键乱序插入的情况下)
+        * 页可以为空，也可以填充一半，也可以填充全部，每个页包含了2-N行数据，根据主键排列
+    * 页合并
+        * 当删除一行记录使，只是记录被标记(flaged)为删除并且空间变得允许被其他记录声明使用
+        * 当页中删除的记录达到MERGE_THRESHOLD(默认为页的50%)，InnoDB会开始寻找最靠近的页来决定是否合并来节省空间
+    * 设计原则
+        * 尽量降低主键长度
+        * 尽量选择顺序插入，使用auto_increment自增主键
+        * 尽量不使用UUID做主键
+        * 尽量不修改主键
+
+* order by
+    * using filesort
+        * 通过表的索引或全表扫描，读取满足条件的数据行,然后在排序缓冲区sort buffer进行排序操作，不通过索引直接返回排序结果的排序为FileSort排序
+    * using index
+        * 通过有序索引顺序扫描直接返回有序数据，不需要额外排序
+    * 设计规则
+        * 建立合适的索引
+        * 尽量使用覆盖索引
+        * 索引创建时可以指定顺序规则(ASC/DESC)
+        * 适当增大排序缓冲区的大小sort_buffer_size(默认256K)
+
+* group by
+    * 建立合适的索引
+
+* limit
+    * 创建覆盖索引加子查询进行优化
+
+* count
+**cout(字段)<count(主键 id)<count(1)=count(*)** 
+    * 自己计数
+
+* update
+**尽量对有索引的字段进行查询避免行锁升级为表锁** 
+
+## 视图
+**视图是一种虚拟存在的表，其中的数据并不实际存在，只保存了查询SQL逻辑，不保存查询结果** 
+
+* create
+```sql
+CREATE [OR REPLACE] VIEW view_name AS SELECT语句 [WITH [CASCADED | LOCAL] CHECK OPTION]
+```
+
+* query
+```sql
+SHOW CREATE VIEW view_name;
+SELECT * FROM view_name;
+```
+* change
+```sql
+CREATE [OR REPLACE] VIEW view_name AS SELECT语句 [WITH [CASCADED | LOCAL] CHECK OPTION];
+ALTER VIEW view_name AS SELECT语句 [WITH [CASCADED | LOCAL] CHECK OPTION];
+```
+
+* drop
+```sql
+DROP VIEW [IF EXISTS] view_name;
+```
+
+### 检查选项
+**默认为CASCADED** 
+> CASCADED(级联):对视图进行操作时会检查当前视图及子视图所有的过滤条件
+> LOCAL:对视图进行操作时会检查当前视图及子视图中存在检查条件的语句中的过滤条件
+
+### 更新
+* 视图中的行和基础表中的行之间必须存在一对一的关系，以下情况不可更新
+    * 聚合函数或窗口函数
+    * DISTINCT
+    * GROUP BY
+    * HAVING
+    * UNION / UNION ALL
+
+### 作用
+* 简单
+    * 简化SQL语句
+* 安全
+    * 用户只能查询和修改所见到的数据
+* 数据独立
+    * 屏蔽真实表结构的变化
+
+## 存储过程
+**事先经过编译并存储在数据库中的一段SQL语句的集合，用来简化操作，减少数据在数据库和应用服务器之间的传输** 
+
+* create
+**在命令行中，使用关键字delimiter指定SQL语句的结束符** 
+```sql
+CREATE PROCEDURE name([paramters])
+BEGIN
+    -- SQL语句
+END:
+```
+
+* use
+```sql
+CALL name([paramters]);
+```
+
+* check
+```sql
+-- 查询指定数据库的存储过程及状态
+SELECT * FROM INFOMATION_SCHEMA.ROUTINES WHERE ROUTIN)SCHEMA = 'xxx';
+-- 查询蘑菇存储过程的定义
+SHOW CREATE PROCEDURE name;
+```
+
+* delete
+```sql
+DROP PROCEDURE [IF EXISTS] name;
+```
+
+### 变量
+* 系统变量
+    * 全局变量
+    * 会话变量
+```sql
+-- check
+SHOW [SESSION | GLOBAL] VARIABLES;
+SHOW [SESSION | GLOBAL] VARIABLES LIKE '...';
+SELECT @@[SESSION | GLOBAL] variableS_name;
+
+-- set
+SET [SESSION | GLOBAL] 系统变量名=值;
+SET @@[SESSION | GLOBAL] 系统变量名=值;
+```
+
+* 用户定义变量
+    * assignment
+    ```sql
+    SET @var_name =expr[,@var_name=expr]...;
+    SET @var_name :=expr[,@var_name=expr]...;
+    SELECT @var_name :=expr[,@var_name=expr]...;
+    SELECT 字段名 INTO @var_name FROM 表名;
+    ```
+    * use
+    ```sql
+    SELECT @var_name;
+    ```
+
+* 局部变量
+**作用范围为BEGIN ... END块** 
+    * statement
+    ```sql
+    DECLARE 变量名 变量类型[DEFAULT ...];
+    ```
+    * assignment
+    ```sql
+    SET 变量名=值;
+    SET 变量名:=值;
+    SELECT 字段名 INTO 变量名 FROM 表名...;
+    ```
+
+### 条件判断
+* IF
+```sql
+IF condition1 THEN
+    ...
+ELSE condition2 THEN
+    ...
+ELSE
+    ...
+END IF;
+```
+
+* paramters
+| type  | content            | remark  |
+|-------|--------------------|---------|
+| IN    | input value        | default |
+| OUT   | output value       |         |
+| INOUT | input/output value |         |
+```sql
+CREATE PROCEDURE name([IN/OUT/INOUT paramters_name paramters_type])
+BEGIN
+    -- SQL语句
+END:
+```
+* CASE
+    * grammer1
+    ```sql
+    CASE case_value
+        WHEN when_value1 THEN statement_list1
+        [ WHEN when_value1 THEN statement_list1 ]
+        [ ELSE statement_list ]
+    END CASE;
+    ```
+    * grammer2
+    ```sql
+    CASE
+        WHEN search_condition1 THEN statement_list1
+        [ WHEN search_condition2 THEN statement_list1 ]
+        [ ELSE statement_list ]
+    END CASE;
+    ```
+
+* WHILE
+```sql
+-- judge the condition first,if true then enter the loop
+WHILE condition DO
+    ...
+END WHILE;
+```
+
+* REPEAT
+```sql
+-- excute the logic first,then judge the condition,if false then enter the loop
+REPEAT
+    ...
+    UNTIL contidion
+END REPEAT;
+```
+
+* LOOP
+    * LEAVE label;
+    > exit the pointed label loop
+    * ITERATE label;
+    > enter the next loop
+```sql
+[begin_label:] LOOP
+    ...
+END LOOP [end_label];
+```
+
+**example:** 
+```sql
+create procedure p(in n int)
+begin
+    declare total int default 0;
+    sum:loop
+        if n <=0 then
+            leave sum;
+        end if;
+        if n % 2 = 1 then
+            set n := n - 1;
+            iterate sum;
+        end if;
+        set total := total + n;
+        set n := n - 1;
+    end loop sum;
+    select total;
+end;
+```
