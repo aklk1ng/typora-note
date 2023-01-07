@@ -1,4 +1,4 @@
-# DDL
+# DDL(数据库定义语言)
 ### 数据库操作
 * query
 ```sql
@@ -79,7 +79,7 @@ TRUNCATE TABLE 表名; -- 会重新创建该表
 
 > score double(4,1) 精度指总位数，标度指小数位
 
-# DML
+# DML(数据操纵语言)
 * insert
 ```sql
 INSERT INTO 表名(字段1，字段2， ...) VALUES(值1,值2,...);
@@ -95,7 +95,7 @@ UPDATE 表名 SET 字段名1=值1,字段名2=值2,...[WHERE 条件] -- 不指明
 ```sql
 DELETE FROM 表名 [WHERE 条件]
 ```
-# DQL
+# DQL(数据查询语言)
 * select query
 ```sql
 SELECT 字段列表
@@ -125,7 +125,7 @@ LIKE _代表占位符，%代表任意一个字符
 | avg      | 平均值   |
 | sum      | 求和     |
 
-# DCL
+# DCL(数据控制语言)
 * query user
 ```sql
 USE mysql;
@@ -660,7 +660,7 @@ CALL name([paramters]);
 ```sql
 -- 查询指定数据库的存储过程及状态
 SELECT * FROM INFOMATION_SCHEMA.ROUTINES WHERE ROUTIN)SCHEMA = 'xxx';
--- 查询蘑菇存储过程的定义
+-- 查询指定存储过程的定义
 SHOW CREATE PROCEDURE name;
 ```
 
@@ -677,7 +677,7 @@ DROP PROCEDURE [IF EXISTS] name;
 -- check
 SHOW [SESSION | GLOBAL] VARIABLES;
 SHOW [SESSION | GLOBAL] VARIABLES LIKE '...';
-SELECT @@[SESSION | GLOBAL] variableS_name;
+SELECT @@[SESSION | GLOBAL] variable_name;
 
 -- set
 SET [SESSION | GLOBAL] 系统变量名=值;
@@ -799,3 +799,147 @@ begin
     select total;
 end;
 ```
+
+* CURSOR
+**存储查询结果集的数据类型,在存储过程中使用游标对结果集进行循环的处理** 
+    * statement
+    ```sql
+    DECLARE cursor_name CURSOR FOR SQL语句;
+    ```
+    * open
+    ```sql
+    OPEN cursor_name;
+    ```
+    * get
+    ```sql
+    FETCH cursor_name INTO variable_name;
+    ```
+    * close
+    ```sql
+    CLOSE cursor_name;
+    ```
+
+* handler
+**条件处理程序可以定义在流程控制结构执行过程中遇到问题时相应的处理步骤**
+```sql
+DECLARE handler_action HANDLER FOR condition_value,... statement(SQL语句);
+
+handler_action
+    CONTINUE:继续执行当前程序
+    EXIT:终止执行当前程序
+
+condition_value
+    SQLSTATE sqlstate_value:状态码，如02000
+    SQLWARNING:所有以01开头的SQLSTATE代码的简写
+    NOT FOUND:所有以02开头的SQLSTATE代码的简写
+    SQLEXCEPTION:所有没有被SQLWARNING或NOT FOUND捕获的SQLSTATE代码的简写
+```
+
+## 存储函数
+* **有返回值的存储过程，参数只能是IN类型**  
+```sql
+CREATE FUNCTION function_name(arguments)
+RETURNS type [characteristic ...]
+BEGIN
+    ---SQL语句
+    RETURN ...;
+END;
+
+characteristic:
+* DETERMINISTIC:相同的输入参数产生相同的结果
+* NO SQL:不包含SQL语句
+* READS SQL DATA:包含读取数据的语句，但不包含写入数据的语句
+```
+
+## 触发器
+* **与表相关的数据库对象，在insert/update/delete之前或之后，触发并执行触发器定义中的SQL语句集合** 
+
+* **目前只支持行极触发，不支持语句触发** 
+
+| 触发器类型 | NEW and OLD                                          |
+|------------|------------------------------------------------------|
+| INSERT     | NEW表示将要或已经新增的数据                          |
+| UPDATE     | OLD表示修改之前的数据，NEW表示将要或已经修改后的数据 |
+| DELETE     | OLD表示将要或已经删除的数据                          |
+
+* create
+```sql
+CREATE TRIGGER trigger_name
+BEFORE/AFTER INSERT/UPDATE/DELETE
+ON tbl_naem FOR EACH ROW -- 行级触发器
+BEGIN
+    trigger_stmt;
+END;
+```
+
+* check
+```sql
+SHOW TRIGGERS;
+```
+
+* delete
+```sql
+-- 如果没有指定scherma_name，默认为当前数据库
+DROP TRIGGER [scherma_name] trigger_name;
+```
+
+## 锁
+**计算机协调多个进程或线程并发访问某一资源的机制** 
+
+### 全局锁
+**对整个数据库实例枷锁，加锁后整个实例就处于只读状态** 
+```sql
+-- add global lock
+FLUSH TABLES WITH READ LOCK;
+
+--single-transaction 不加锁完成一致性备份
+mysqldump [-h ip_name] -u name -p password table_name > table_name.bak
+
+-- unlock
+UNLOCK TABLES;
+```
+
+### 表级锁
+* 表锁
+    * 表共享读锁(read lock) -- 阻塞其他客户端的写操作
+
+    * 表独占写锁(write lock) -- 阻塞其他客户端的读，写操作
+```sql
+-- lock
+LOCK TABLES table_name READ/WRITE;
+-- unlock
+UNLOCK TABLES / disconnect the mysq server;
+```
+
+* 元数据锁(meta data lock, MDL)
+> 系统自动控制，在访问一张表的时候自动加上，用于维护表元数据的一致性，避免DML与DDL冲突
+
+```sql
+-- check the meta data lock
+SELECT object_type,object_scheme,object_name,lock_type,lock_duration from performance_schema.metadata_locks;
+```
+
+| SQL                                        | 锁类型                                  | 说明                                            |
+|--------------------------------------------|-----------------------------------------|-------------------------------------------------|
+| lock tables read/write                     | SHARED_READ_ONLY / SHARED_NO_READ_WRITE |                                                 |
+| select,select ... lock in share mode       | SHARED_READ                             | 与SHARED_READ.SHARED_WRITE兼容，与EXCLUSIVE互斥 |
+| insert,update,delete,select ... for update | SHARED_WRITE                            | 与SHARED_READ.SHARED_WRITE兼容，与EXCLUSIVE互斥 |
+| alter update ...                           | EXCLUSIVE                               | 与其他的MDL都互斥                               |
+
+* 意向锁
+**为了避免DML执行时加的行锁与表锁的冲突，在InnoDB中引入意向锁，使得表锁不用检查每行属否加锁** 
+    * 意向共享锁(IS)
+    * 意向排他锁(IX)
+
+```sql
+-- check the lock
+SELECT object_type,object_scheme,object_name,lock_type,lock_duration from performance_schema.data_locks;
+```
+### 行级锁
+**通过对索引上的索引项加锁** 
+
+* 行锁 -- 锁定单个行记录
+**如果不通过索引条件进行检索数据，此时行锁升级为表锁**
+* 间隙锁 -- 锁定索引记录间隙(不包含该记录)，确保索引记录间隙不变，防止其他事务在这个间隙insert，产生幻读
+    *索引上的等值查询(唯一索引)
+* 临键锁 -- 行锁和间隙锁组合，同时锁住数据和数据的间隙Gap
