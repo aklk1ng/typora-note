@@ -137,6 +137,7 @@ CREATE USER 'name'@'localhost' IDENTIFIED BY 'password';
 ```
 * change the user's password
 ```sql
+SHOW VARIABLES LIKE 'validate_password%'; -- 查看密码配置
 ALTER USER 'name'@'localhost' IDENTIFIED WITH mysql_native_password BY 'new_password';
 ```
 * delete user
@@ -145,7 +146,7 @@ DROP USER 'name'@'localhost';
 ```
 * query permissions
 ```sql
-SHOW GRANTS FO 'name'@'localhost';
+SHOW GRANTS FOR 'name'@'localhost';
 ```
 * give permissions
 ```sql
@@ -236,60 +237,65 @@ ALTER TABLE 表名DROP FOREIGN KEY 外键名称;
 ```
 
 # multi-table query
-* one-to-many
+
+## one-to-many
 > 多的方面构建外键
-* many to many
+
+## many to many
 > 建立第三张中间表，中间表至少包含两个外键，分别关联两方主键
-* one-to-one
+
+## one-to-one
 > 用于单表拆分，基础字段和其他详细字段分开存放
-* query
-    * 连接查询
-        * 内连接：查询交集部分数据
-        ```sql
-        -- 隐式内连接
-        SELECT 字段列表 FROM 表1,表2 WHERE 条件 ...;
-        -- 显式内连接
-        SELECT 字段列表 FROM 表1 [INNER] JOIN 表2 ON 连接条件 ...;
-        ```
-        * 外连接：
-            * 左外连接：查询左表所有数据，以及两张表交集部分的数据
-            ```sql
-            SELECT 字段列表 FROM 表1 LEFT [OUTER] JOIN 表2 ON 条件...;
-            ```
-            * 右外连接：查询右表所有数据，以及两张表交集部分的数据
-            ```sql
-            SELECT 字段列表 FROM 表1 RIGHT [OUTER] JOIN 表2 ON 条件...;
-            ```
-        * 自连接：当前表与自身的连接查询，自连接必须使用表别名
-            ```sql
-            SELECT 字段列表 FROM 表1 别名1 JOIN 表2 别名2 ON 条件...;
-            ```
-    * 联合查询(字段列表需完全相同)
+
+## query
+### 连接查询
+#### 内连接：查询交集部分数据
+```sql
+-- 隐式内连接
+SELECT 字段列表 FROM 表1,表2 WHERE 条件 ...;
+-- 显式内连接
+SELECT 字段列表 FROM 表1 [INNER] JOIN 表2 ON 连接条件 ...;
+```
+#### 外连接：
+* 左外连接：查询左表所有数据，以及两张表交集部分的数据
+```sql
+SELECT 字段列表 FROM 表1 LEFT [OUTER] JOIN 表2 ON 条件...;
+```
+* 右外连接：查询右表所有数据，以及两张表交集部分的数据
+```sql
+SELECT 字段列表 FROM 表1 RIGHT [OUTER] JOIN 表2 ON 条件...;
+```
+#### 自连接：当前表与自身的连接查询，自连接必须使用表别名
     ```sql
-    SELECT 字段列表 FROM 表1...
-    UNION [ALL] --- 去掉ALL实现去重
-    SELECT 字段列表 FROM 表1...;
+    SELECT 字段列表 FROM 表1 别名1 JOIN 表2 别名2 ON 条件...;
     ```
-    * 子查询(嵌套SELECT语句)
-    ```sql
-    SELECT 字段列表 FROM 表1 WHERE 字段1 = (SELECT 字段1 FROM 表2);
-    ```
+### 联合查询(字段列表需完全相同)
+```sql
+SELECT 字段列表 FROM 表1...
+UNION [ALL] --- 去掉ALL实现去重
+SELECT 字段列表 FROM 表1...;
+```
+### 子查询(嵌套SELECT语句)
+```sql
+SELECT 字段列表 FROM 表1 WHERE 字段1 = (SELECT 字段1 FROM 表2);
+```
 
-    > 标量子查询(子查询结果为单个值)
+#### 标量子查询(子查询结果为单个值)
 
-    常用的操作符: =, <>, >, >=, <, <=
-    > 列子查询(子查询结果为一列)
+常用的操作符: =, <>, >, >=, <, <=
 
-        常用的操作符: IN, NOT IN, ANY, SOME, ALL
-        SELECT 字段列表 FROM 表1 WHERE 字段1 > ANY (SELECT 字段1 FROM 表2 WHERE 条件...);
-    > 行子查询(子查询结果为一行)
+#### 列子查询(子查询结果为一列)
 
-        常用的操作符: =, <>, IN, NOT IN
-        SELECT 字段列表 FROM 表1 WHERE (字段1,字段2) = (SELECT 字段1,字段2 FROM 表1 WHERE 条件...);
-    > 表子查询(子查询结果为多行多列)
+    常用的操作符: IN, NOT IN, ANY, SOME, ALL
+    SELECT 字段列表 FROM 表1 WHERE 字段1 > ANY (SELECT 字段1 FROM 表2 WHERE 条件...);
+> 行子查询(子查询结果为一行)
 
-        常用的操作符: IN
-        SELECT 字段列表 FROM 表1 WHERE (字段1,字段2) IN (SELECT 字段1,字段2 FROM 表1 WHERE 条件...);
+    常用的操作符: =, <>, IN, NOT IN
+    SELECT 字段列表 FROM 表1 WHERE (字段1,字段2) = (SELECT 字段1,字段2 FROM 表1 WHERE 条件...);
+> 表子查询(子查询结果为多行多列)
+
+    常用的操作符: IN
+    SELECT 字段列表 FROM 表1 WHERE (字段1,字段2) IN (SELECT 字段1,字段2 FROM 表1 WHERE 条件...);
 
 # transaction
 ## operation
@@ -340,64 +346,74 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
 ```
 
 # MySQL体系结构
-* 客户端
-* 服务端
-    * 连接层
-    * 服务层
-    * 引擎层
-    ```sql
-    CREATE TABLE table_name(
-        字段1 字段1类型[COMMENT 字段1注释],
-        字段2 字段2类型[COMMENT 字段2注释],
-        字段3 字段3类型[COMMENT 字段3注释],
-        ......
-        字段n 字段n类型[COMMENT 字段n注释] -- don need to add the ''
-    )ENGINE = INNODB [COMMENT 表注释];
 
-    SHOW ENGINES; -- 查看数据库支持的存储引擎
-    ```
+### 客户端
 
-    **`InnoDB:`**
+### 服务端
 
-    DML操作遵循ACID模型，支持事务
+#### 连接层
 
-    行级锁，提高并发访问性能
+#### 服务层
 
-    支持外键FOREIGN KEY 约束，保证数据的完整性和正确性
+#### 引擎层
+```sql
+CREATE TABLE table_name(
+    字段1 字段1类型[COMMENT 字段1注释],
+    字段2 字段2类型[COMMENT 字段2注释],
+    字段3 字段3类型[COMMENT 字段3注释],
+    ......
+    字段n 字段n类型[COMMENT 字段n注释] -- don need to add the ''
+)ENGINE = INNODB [COMMENT 表注释];
 
-        1. TableSpace:表空间
-        2. Segment:段
-        3.Extent(1M):区
-        4.Page(16K):页
-        5.Row:行
-    **`MyISAM`**
+SHOW ENGINES; -- 查看数据库支持的存储引擎
+```
 
-    不支持事务，不支持外键
-    
-    支持表锁，不支持行锁
+**`InnoDB:`**
 
-    访问速度快
+DML操作遵循ACID模型，支持事务
 
-    **`Memory:`**
+行级锁，提高并发访问性能
 
-    内存存放
+支持外键FOREIGN KEY 约束，保证数据的完整性和正确性
 
-    hash索引
+1. TableSpace:表空间
+> idb文件,一个mysql实例可以对应多个表空间，用于存储记录，索引等数据
+2. Segment:段
+> 数据段(Lead node Segment),索引段(Non-leaf node Segment),回滚段(Rollback Segment),InnoDB是索引组织表，数据段就是B+树的叶子节点，索引段就是B+树的非叶子节点
+3. Extent(1M):区
+> 一个区中默认有连续64个页
+4. Page(16K):页
+> InnoDB存储引擎磁盘管理的最小单元，每次InnoDB引擎向磁盘申请4-5个区
+5. Row:行
+> InnoDB存储引擎每一行的数据
+**`MyISAM`**
 
-    | 特点             | InnoDB            | MyISAM     | Memory     |
-    | :--------------: | :---------------: | :--------: | :--------: |
-    | 存储限制         | 64TB              | 有         | 有         |
-    | 事务安全         | 支持              |            |            |
-    | 锁机制           | 行锁              | 表锁       | 表锁       |
-    | B+tree索引       | 支持              | 支持       | 支持       |
-    | Hash索引         | -(自适应)         | -          | 支持       |
-    | 全文索引         | 支持(5.6之后)     | 支持       | -          |
-    | 空间使用         | 高                | 低         | N/A        |
-    | 内存使用         | 高                | 低         | 中等       |
-    | 批量插入速度     | 低                | 高         | 高         |
-    | 支持外键         | 支持              | -          | -          |
+不支持事务，不支持外键
 
-    * 存储层
+支持表锁，不支持行锁
+
+访问速度快
+
+**`Memory:`**
+
+内存存放
+
+hash索引
+
+| 特点             | InnoDB            | MyISAM     | Memory     |
+| :--------------: | :---------------: | :--------: | :--------: |
+| 存储限制         | 64TB              | 有         | 有         |
+| 事务安全         | 支持              |            |            |
+| 锁机制           | 行锁              | 表锁       | 表锁       |
+| B+tree索引       | 支持              | 支持       | 支持       |
+| Hash索引         | -(自适应)         | -          | 支持       |
+| 全文索引         | 支持(5.6之后)     | 支持       | -          |
+| 空间使用         | 高                | 低         | N/A        |
+| 内存使用         | 高                | 低         | 中等       |
+| 批量插入速度     | 低                | 高         | 高         |
+| 支持外键         | 支持              | -          | -          |
+
+### 存储层
 
 ## 索引(index)
 **帮助MySQL高效获取数据的数据结构(有序)** 
@@ -407,14 +423,14 @@ SET [SESSION GLOBAL] TRANSACTION ISOLATION LEVEL {READ UNCOMMITTED | READ COMMIT
 | R-tree(空间索引)    | MyISAM引擎的一个特殊索引类型   |
 | Full-text(全文索引) | 通过建立倒排索引，快速匹配文档 |
 
-* B-Tree(多路平衡查找树)
+### B-Tree(多路平衡查找树)
 ```text
 以一颗最大度数(子节点个数)为5的b-tree为例(每个节点最多存储4个key,5个指针)
 ```
-* B+Tree(MySQL)
+### B+Tree(MySQL)
     * 所有的数据都会出现在叶子节点
     * 叶子节点构成一个双向链表(原本为单向链表)
-* Hash
+### Hash
     * 只能用于对等比较(=,in),不支持范围查(between,>,<,...)
     * 无法利用索引完成排序操作
     * 查询效率高，通常只需要一次检索，效率高于B+Tree索引
@@ -543,11 +559,11 @@ EXPLAIN/DESC SELECT 字段列表 FROM 表名 WHERE 条件;
         * 表示返回结果的行户占需读取行数的百分比，该值越大越好
 
 ## MySQL优化
-* insert优化
+### insert优化
     * 批量插入
     * 手动提交事务
     * 主键顺序插入
-* 大批量插入数据(load)
+### 大批量插入数据(load)
 ```sql
 -- 连接客户端
 mysql --local-infile -u root -p
@@ -557,41 +573,41 @@ set global local_infile=1;
 load data local infile 'ABSOLUTE_PATH' into table table_name fields terminated by ',' line terminated by '\n';
 ```
 
-* 主键
+### 主键
 **在InnoDB存储引擎中，表数据根据主键顺序组织存放----索引组织表** 
-    * 页分裂(出现在主键乱序插入的情况下)
-        * 页可以为空，也可以填充一半，也可以填充全部，每个页包含了2-N行数据，根据主键排列
-    * 页合并
-        * 当删除一行记录使，只是记录被标记(flaged)为删除并且空间变得允许被其他记录声明使用
-        * 当页中删除的记录达到MERGE_THRESHOLD(默认为页的50%)，InnoDB会开始寻找最靠近的页来决定是否合并来节省空间
-    * 设计原则
-        * 尽量降低主键长度
-        * 尽量选择顺序插入，使用auto_increment自增主键
-        * 尽量不使用UUID做主键
-        * 尽量不修改主键
+* 页分裂(出现在主键乱序插入的情况下)
+    * 页可以为空，也可以填充一半，也可以填充全部，每个页包含了2-N行数据，根据主键排列
+* 页合并
+    * 当删除一行记录使，只是记录被标记(flaged)为删除并且空间变得允许被其他记录声明使用
+    * 当页中删除的记录达到MERGE_THRESHOLD(默认为页的50%)，InnoDB会开始寻找最靠近的页来决定是否合并来节省空间
+* 设计原则
+    * 尽量降低主键长度
+    * 尽量选择顺序插入，使用auto_increment自增主键
+    * 尽量不使用UUID做主键
+    * 尽量不修改主键
 
-* order by
-    * using filesort
-        * 通过表的索引或全表扫描，读取满足条件的数据行,然后在排序缓冲区sort buffer进行排序操作，不通过索引直接返回排序结果的排序为FileSort排序
-    * using index
-        * 通过有序索引顺序扫描直接返回有序数据，不需要额外排序
-    * 设计规则
-        * 建立合适的索引
-        * 尽量使用覆盖索引
-        * 索引创建时可以指定顺序规则(ASC/DESC)
-        * 适当增大排序缓冲区的大小sort_buffer_size(默认256K)
+### order by
+* using filesort
+    * 通过表的索引或全表扫描，读取满足条件的数据行,然后在排序缓冲区sort buffer进行排序操作，不通过索引直接返回排序结果的排序为FileSort排序
+* using index
+    * 通过有序索引顺序扫描直接返回有序数据，不需要额外排序
+* 设计规则
+    * 建立合适的索引
+    * 尽量使用覆盖索引
+    * 索引创建时可以指定顺序规则(ASC/DESC)
+    * 适当增大排序缓冲区的大小sort_buffer_size(默认256K)
 
-* group by
+### group by
     * 建立合适的索引
 
-* limit
+### limit
     * 创建覆盖索引加子查询进行优化
 
-* count
+### count
 **cout(字段)<count(主键 id)<count(1)=count(*)** 
     * 自己计数
 
-* update
+### update
 **尽量对有索引的字段进行查询避免行锁升级为表锁** 
 
 ## 视图
@@ -670,9 +686,9 @@ DROP PROCEDURE [IF EXISTS] name;
 ```
 
 ### 变量
-* 系统变量
-    * 全局变量
-    * 会话变量
+#### 系统变量
+* 全局变量
+* 会话变量
 ```sql
 -- check
 SHOW [SESSION | GLOBAL] VARIABLES;
@@ -684,20 +700,20 @@ SET [SESSION | GLOBAL] 系统变量名=值;
 SET @@[SESSION | GLOBAL] 系统变量名=值;
 ```
 
-* 用户定义变量
-    * assignment
-    ```sql
-    SET @var_name =expr[,@var_name=expr]...;
-    SET @var_name :=expr[,@var_name=expr]...;
-    SELECT @var_name :=expr[,@var_name=expr]...;
-    SELECT 字段名 INTO @var_name FROM 表名;
-    ```
-    * use
-    ```sql
-    SELECT @var_name;
-    ```
+#### 用户定义变量
+* assignment
+```sql
+SET @var_name =expr[,@var_name=expr]...;
+SET @var_name :=expr[,@var_name=expr]...;
+SELECT @var_name :=expr[,@var_name=expr]...;
+SELECT 字段名 INTO @var_name FROM 表名;
+```
+* use
+```sql
+SELECT @var_name;
+```
 
-* 局部变量
+#### 局部变量
 **作用范围为BEGIN ... END块** 
     * statement
     ```sql
@@ -711,7 +727,7 @@ SET @@[SESSION | GLOBAL] 系统变量名=值;
     ```
 
 ### 条件判断
-* IF
+#### IF
 ```sql
 IF condition1 THEN
     ...
@@ -722,7 +738,7 @@ ELSE
 END IF;
 ```
 
-* paramters
+**paramters**
 | type  | content            | remark  |
 |-------|--------------------|---------|
 | IN    | input value        | default |
@@ -734,7 +750,7 @@ BEGIN
     -- SQL语句
 END:
 ```
-* CASE
+#### CASE
     * grammer1
     ```sql
     CASE case_value
@@ -752,7 +768,7 @@ END:
     END CASE;
     ```
 
-* WHILE
+#### WHILE
 ```sql
 -- judge the condition first,if true then enter the loop
 WHILE condition DO
@@ -760,7 +776,7 @@ WHILE condition DO
 END WHILE;
 ```
 
-* REPEAT
+#### REPEAT
 ```sql
 -- excute the logic first,then judge the condition,if false then enter the loop
 REPEAT
@@ -769,7 +785,7 @@ REPEAT
 END REPEAT;
 ```
 
-* LOOP
+#### LOOP
     * LEAVE label;
     > exit the pointed label loop
     * ITERATE label;
@@ -800,7 +816,7 @@ begin
 end;
 ```
 
-* CURSOR
+#### CURSOR
 **存储查询结果集的数据类型,在存储过程中使用游标对结果集进行循环的处理** 
     * statement
     ```sql
@@ -819,7 +835,7 @@ end;
     CLOSE cursor_name;
     ```
 
-* handler
+#### handler
 **条件处理程序可以定义在流程控制结构执行过程中遇到问题时相应的处理步骤**
 ```sql
 DECLARE handler_action HANDLER FOR condition_value,... statement(SQL语句);
@@ -942,4 +958,142 @@ SELECT object_type,object_scheme,object_name,lock_type,lock_duration from perfor
 **如果不通过索引条件进行检索数据，此时行锁升级为表锁**
 * 间隙锁 -- 锁定索引记录间隙(不包含该记录)，确保索引记录间隙不变，防止其他事务在这个间隙insert，产生幻读
     *索引上的等值查询(唯一索引)
-* 临键锁 -- 行锁和间隙锁组合，同时锁住数据和数据的间隙Gap
+* 临键锁 -- 行锁和间隙锁组合，同时锁住数据和数据前的间隙Gap
+
+## 架构
+### 内存架构
+#### Buffer Pool
+> 缓冲池是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据(若缓冲池没有数据，则从磁盘加载并缓存),然后再以一定频率刷新到磁盘，从而减少磁盘IO,加快处理速度
+**缓冲池一页为单位，底层采用链表数据结构管理** 
+    * free page:空闲page
+    * clean page:被使用page,数据没有被修改过
+    * dirty page:脏页，被使用page,数据被修改过
+
+#### Change Buffer
+> 更改缓存区(针对非唯一二级索引页)，在执行DML语句时，如果这些数据page没有在Buffer Pool中，不会直接操作磁盘，而会将数据变更储存在Change Buffer中，在未来在未来数据被读取时，在将数据合并恢复到Buffer Pool中，在将合并后的数据刷新到磁盘中
+
+* Adaptive Hash Index
+> 自适应hash索引，用于优化对Buffer Pool数据的查询，系统根据情况自动完成
+
+#### Log Buffer
+> 日志缓存区，保存要写入到磁盘中的log日志数据(redo log,undo log),默认大小为16MB,日志缓冲区的日志会定期刷新到磁盘中
+**参数:** 
+    * innodb_log_buffer_size:缓冲区大小
+    * innodb_flush_log_at_trx_commit:日志刷新到磁盘时机
+        * 0 -- 每秒将日志写入并刷新磁盘一次
+        * 1 -- 日志在每次事务提交时写入并刷新磁盘
+        * 2 -- 日志在每次事务提交后写入，并每秒刷新到磁盘一次
+
+### 磁盘结构
+#### System Tablespace
+> Change Buffer的存储区域
+**参数:innodb_data_file_path** 
+
+#### File-Per-Table Tablespaces
+> 每个表的文件表空间包含单个InnoDB表的数据和索引，并存储在文件系统的单个数据文件中
+**参数:innodb_file_per_table** 
+
+#### General Tablespaces
+> 通用表空间
+```sql
+CREATE TABLESPACE xxxx ADD DATAFILE 'file_name' ENGINE = engine_name;
+CREATE TABLE xxx ... TABLESPACE ts_name;
+```
+
+#### Undo Tablespaces
+> 撤销表空间，MySQL实例创建时默认创建两个undo表空间(初始大小为16M)，存储undo log日志
+
+#### Temporary Tablespaces
+> InnoDB使用会话临时表空间和全局临时表空间，存储用户创建的临时表等数据
+
+#### Doublewrite Buffer Files
+> 双写缓冲区，InnoDB引擎将数据页从Buffer Pool刷新到磁盘前，先将数据也写入双写缓冲区文件中，便于系统异常时恢复数据
+
+#### Redo Log
+> 重做日志，用来实现事务的持久性，包含日志缓冲区(redo log buffer)和重做日志文件(redo log),前者在内存中，后者在磁盘中，当事务提交后会把所有修改信息存到该日志中
+
+
+### 后台线程
+#### Master Thread
+> 核心后台线程，负责调度其他线程，还负责将缓冲池中的数据异步刷新到磁盘中，保持数据的一致性，还包括脏页的刷新，合并插入缓存，undo页的回收
+
+#### IO Thread
+| 线程类型             | 默认个数 | 职责                     |
+| Read thread          | 4        | read                     |
+| Write thread         | 4        | write                    |
+| Log thread           | 1        | 将日志缓冲区刷新到磁盘   |
+| Insert buffer thread | 1        | 将写缓冲区内容刷新到磁盘 |
+
+#### Purge Thread
+> 回收事务已经提交了的undo log,在事务提交之后，undo log可能不用了，就用它来回收
+
+#### Page Cleaner Thread
+> 协助Master Thread刷新脏页到磁盘的线程，减轻Master Thread的压力
+
+
+## 事务原理
+### redo log
+> 重做日志，记录事务提交时数据也的物理修改，实现事务的**持久性**
+
+### undo log
+> 记录数据被修改前的信息，用于回滚和MVCC(多版本并发控制),实现事务的**原子性**
+* 销毁
+    * 在事务执行时产生，事务提交时，并不会立即删除undo log,因为这些日志可能还用于MVCC
+* 存储
+    * 采用段的方式进行管理和记录
+
+### undo log + redo log
+> 实现事务的**一致性**
+
+### 锁 + MVCC
+> 实现事务的隔离性
+
+## MVCC(Multi-Version Concurrency Control)
+* 当前读
+> 读取的是记录的最新版本，读取时保证其他并发事务不能修改该记录，会对读取的数据进行加锁
+
+* 快照读
+> 简单的select(不枷锁)，读取的是记录数据的可见版本，可能是历史数据
+* Read Committed
+    * 每次select都生成一个快照读
+* Repeatable Read
+    * 开启事务后第一个select语句才是快照读的地方
+* Serializable
+    * 快照读退化为当前读
+
+### 隐藏字段
+| 隐藏字段    | 含义                                                                |
+| DB_TRX_ID   | 最近修改事务ID,记录插入这条记录或最后一次修改该记录的事务ID         |
+| DB_ROLL_PTR | 回滚指针，指向这条记录的上一个版本，用于配合undo log,指向上一个版本 |
+| DB_ROW_ID   | 隐藏之间，如果表结构没有指定主键，将会生成该隐藏字段                |
+
+### undo log版本链
+> 不同事务或相同事务对用一条记录进行修改，会导致该记录的undo log生成一条记录版本链表，链表的头部是最新的旧记录，链表尾部是最早的旧记录
+* insert时，产生的undo log日志只在回滚时需要，事务提交后立即删除
+* update,delete时，产生的undo log不仅在回滚时需要，在快照读时也需要，不会立即删除
+
+### readview
+> 快照读SQL执行时MVCC提取数据的依据，记录并维护系统当前活跃的事务id
+| 字段           | 含义                          |
+|----------------|-------------------------------|
+| m_ids          | 当前活跃的事务ID集合          |
+| min_trx_id     | 最小活跃事务ID                |
+| max_trx_id     | 预分配事务ID,当前最大事务ID+1 |
+| creator_trx_id | ReadView创建者的事务ID        |
+
+**版本链数据访问规则** 
+* trx_id == creator_trx_id ? **可以**访问该版本
+    * 数据由当前事务更改
+* trx_id < min_trx_id ? **可以**访问该版本
+    * 数据已经提交
+* trx_id > max_trx_id ? **不可以**访问该版本
+    * 该事务在ReadView生成后才开启
+* min_trx_id <= trx_id <= max_trx_id ? 如果trx_id不在m_ids中是**可以**访问该版本的
+    * 数据已经提交
+
+## 系统数据库
+| DataBase           | Performance                                                                           |
+| mysql              | 存储MySQL服务器正常运行所需要的各种信息(时区，主从，用户，权限等)                     |
+| information_schema | 提供了访问数据库元数据的各种表和视图，包含数据库，表，字段类型及访问权限等            |
+| performance_schema | 为MySQL服务器运行时状态提供了一个底层监控功能，主要用于收集数据库服务器性能参数       |
+| sy                 | 包含了一系列方便DBA和开发人员利用performance_schema性能数据库进行性能调优和诊断的视图 |
