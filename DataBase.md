@@ -99,19 +99,19 @@ DELETE FROM 表名 [WHERE 条件]
 * select query
 ```sql
 SELECT 字段列表
-FROM 
+FROM
     表名列表
 WHERE -- 分组前进行过滤,不可对聚合函数过滤
     条件列表
-GROUP BY 
+GROUP BY
     分组字段列表
 HAVING -- 分组后对结果进行过滤,可对聚合函数过滤
     分组后条件列表
-ORDER BY 
+ORDER BY
     排序字段列表 -- (字段1 排序方式1, 字段2 排序方式2)
     ASC:升序
     DESC：降序
-LIMIT 
+LIMIT
     分页参数(起始索引，查询记录数) -- 索引默认从0开始
 DISTINCT 字段列表 -- 去重操作
 LIKE _代表占位符，%代表任意一个字符
@@ -154,7 +154,7 @@ GRANT 权限列表 ON 数据库名.表名 TO 'name'@'localhost';
 ```
 * delete permissions
 ```sql
-REVOKE 权限列表ON 数据库名.表名 FROM 'name'@'localhost'; 
+REVOKE 权限列表ON 数据库名.表名 FROM 'name'@'localhost';
 ```
 
 | permissions        | description              |
@@ -233,7 +233,7 @@ ALTER TABLE 表名 ADD CONSTRAINT 外键名称 FOREIGN KEY(外键字段名) REFE
 ```
 * delete foreign key
 ```sql
-ALTER TABLE 表名DROP FOREIGN KEY 外键名称;  
+ALTER TABLE 表名DROP FOREIGN KEY 外键名称;
 ```
 
 # multi-table query
@@ -416,7 +416,7 @@ hash索引
 ### 存储层
 
 ## 索引(index)
-**帮助MySQL高效获取数据的数据结构(有序)** 
+**帮助MySQL高效获取数据的数据结构(有序)**
 | 索引结构            | 描述                           |
 | B+Tree索引          | 最常见的索引类型               |
 | Hash索引            | 精确匹配索引，不支持范围查询   |
@@ -471,10 +471,10 @@ SELECT * FROM USER WHERE name = 'xxx';
 ### 索引使用
 
 * 最左前缀法则
-**如果索引了多列(联合索引),要遵循最左前缀法则--查询从索引的最左列开始，且不跳过索引中的列,如果跳跃某一列，索引将部分失效(后面的字段索引失效)** 
+**如果索引了多列(联合索引),要遵循最左前缀法则--查询从索引的最左列开始，且不跳过索引中的列,如果跳跃某一列，索引将部分失效(后面的字段索引失效)**
 
 * 范围查询
-**联合索引中，出现范围查询(>,<),范围查询右侧的列索引失效** 
+**联合索引中，出现范围查询(>,<),范围查询右侧的列索引失效**
 
 * 覆盖索引(需要查询返回的数据在索引结构中可以直接找到，不需要在回表)
 
@@ -520,7 +520,7 @@ SHOW GLOBAL STATUS LIKE 'COM_______'; -- 7 个下划线
 
 * 慢查询日志
 
-**慢查询日志记录了所有执行时间超过指定参数(long_query_time,单位:秒，默认10秒)的所有SQL语句的日志,需要在MySQL的配置文件(/etc/my.cnf)=配置** 
+**慢查询日志记录了所有执行时间超过指定参数(long_query_time,单位:秒，默认10秒)的所有SQL语句的日志,需要在MySQL的配置文件(/etc/my.cnf)=配置**
 
 ```text
 slow_query_log=1 -- 开启
@@ -540,7 +540,7 @@ SHOW PROFILE CPU FOR QUERY QUERY_ID -- 查看指定QUERY_ID的各SQL语句CPU的
 ```sql
 EXPLAIN/DESC SELECT 字段列表 FROM 表名 WHERE 条件;
 ```
-**EXPLAIN或者DESC获取MySQL如何执行SELECT语句，包括了在SELECT语句执行过程中表如何连接和连接的顺序** 
+**EXPLAIN或者DESC获取MySQL如何执行SELECT语句，包括了在SELECT语句执行过程中表如何连接和连接的顺序**
     * id
         * SELECT查询的序列号，表示查询中执行SELECT子句或者是操作表的顺序(id相同，执行顺序从上往下，id不同值越大，越先执行)
     * select_type
@@ -574,7 +574,7 @@ load data local infile 'ABSOLUTE_PATH' into table table_name fields terminated b
 ```
 
 ### 主键
-**在InnoDB存储引擎中，表数据根据主键顺序组织存放----索引组织表** 
+**在InnoDB存储引擎中，表数据根据主键顺序组织存放----索引组织表**
 * 页分裂(出现在主键乱序插入的情况下)
     * 页可以为空，也可以填充一半，也可以填充全部，每个页包含了2-N行数据，根据主键排列
 * 页合并
@@ -604,14 +604,14 @@ load data local infile 'ABSOLUTE_PATH' into table table_name fields terminated b
     * 创建覆盖索引加子查询进行优化
 
 ### count
-**cout(字段)<count(主键 id)<count(1)=count(*)** 
+**cout(字段)<count(主键 id)<count(1)=count(*)**
     * 自己计数
 
 ### update
-**尽量对有索引的字段进行查询避免行锁升级为表锁** 
+**尽量对有索引的字段进行查询避免行锁升级为表锁**
 
 ## 视图
-**视图是一种虚拟存在的表，其中的数据并不实际存在，只保存了查询SQL逻辑，不保存查询结果** 
+**视图是一种虚拟存在的表，其中的数据并不实际存在，只保存了查询SQL逻辑，不保存查询结果**
 
 * create
 ```sql
@@ -635,7 +635,7 @@ DROP VIEW [IF EXISTS] view_name;
 ```
 
 ### 检查选项
-**默认为CASCADED** 
+**默认为CASCADED**
 > CASCADED(级联):对视图进行操作时会检查当前视图及子视图所有的过滤条件
 > LOCAL:对视图进行操作时会检查当前视图及子视图中存在检查条件的语句中的过滤条件
 
@@ -656,10 +656,10 @@ DROP VIEW [IF EXISTS] view_name;
     * 屏蔽真实表结构的变化
 
 ## 存储过程
-**事先经过编译并存储在数据库中的一段SQL语句的集合，用来简化操作，减少数据在数据库和应用服务器之间的传输** 
+**事先经过编译并存储在数据库中的一段SQL语句的集合，用来简化操作，减少数据在数据库和应用服务器之间的传输**
 
 * create
-**在命令行中，使用关键字delimiter指定SQL语句的结束符** 
+**在命令行中，使用关键字delimiter指定SQL语句的结束符**
 ```sql
 CREATE PROCEDURE name([paramters])
 BEGIN
@@ -714,7 +714,7 @@ SELECT @var_name;
 ```
 
 #### 局部变量
-**作用范围为BEGIN ... END块** 
+**作用范围为BEGIN ... END块**
     * statement
     ```sql
     DECLARE 变量名 变量类型[DEFAULT ...];
@@ -796,7 +796,7 @@ END REPEAT;
 END LOOP [end_label];
 ```
 
-**example:** 
+**example:**
 ```sql
 create procedure p(in n int)
 begin
@@ -817,7 +817,7 @@ end;
 ```
 
 #### CURSOR
-**存储查询结果集的数据类型,在存储过程中使用游标对结果集进行循环的处理** 
+**存储查询结果集的数据类型,在存储过程中使用游标对结果集进行循环的处理**
     * statement
     ```sql
     DECLARE cursor_name CURSOR FOR SQL语句;
@@ -852,7 +852,7 @@ condition_value
 ```
 
 ## 存储函数
-* **有返回值的存储过程，参数只能是IN类型**  
+* **有返回值的存储过程，参数只能是IN类型**
 ```sql
 CREATE FUNCTION function_name(arguments)
 RETURNS type [characteristic ...]
@@ -868,9 +868,9 @@ characteristic:
 ```
 
 ## 触发器
-* **与表相关的数据库对象，在insert/update/delete之前或之后，触发并执行触发器定义中的SQL语句集合** 
+* **与表相关的数据库对象，在insert/update/delete之前或之后，触发并执行触发器定义中的SQL语句集合**
 
-* **目前只支持行极触发，不支持语句触发** 
+* **目前只支持行极触发，不支持语句触发**
 
 | 触发器类型 | NEW and OLD                                          |
 |------------|------------------------------------------------------|
@@ -900,10 +900,10 @@ DROP TRIGGER [scherma_name] trigger_name;
 ```
 
 ## 锁
-**计算机协调多个进程或线程并发访问某一资源的机制** 
+**计算机协调多个进程或线程并发访问某一资源的机制**
 
 ### 全局锁
-**对整个数据库实例枷锁，加锁后整个实例就处于只读状态** 
+**对整个数据库实例枷锁，加锁后整个实例就处于只读状态**
 ```sql
 -- add global lock
 FLUSH TABLES WITH READ LOCK;
@@ -943,7 +943,7 @@ SELECT object_type,object_scheme,object_name,lock_type,lock_duration from perfor
 | alter update ...                           | EXCLUSIVE                               | 与其他的MDL都互斥                               |
 
 * 意向锁
-**为了避免DML执行时加的行锁与表锁的冲突，在InnoDB中引入意向锁，使得表锁不用检查每行属否加锁** 
+**为了避免DML执行时加的行锁与表锁的冲突，在InnoDB中引入意向锁，使得表锁不用检查每行属否加锁**
     * 意向共享锁(IS)
     * 意向排他锁(IX)
 
@@ -952,7 +952,7 @@ SELECT object_type,object_scheme,object_name,lock_type,lock_duration from perfor
 SELECT object_type,object_scheme,object_name,lock_type,lock_duration from performance_schema.data_locks;
 ```
 ### 行级锁
-**通过对索引上的索引项加锁** 
+**通过对索引上的索引项加锁**
 
 * 行锁 -- 锁定单个行记录
 **如果不通过索引条件进行检索数据，此时行锁升级为表锁**
@@ -964,7 +964,7 @@ SELECT object_type,object_scheme,object_name,lock_type,lock_duration from perfor
 ### 内存架构
 #### Buffer Pool
 > 缓冲池是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据(若缓冲池没有数据，则从磁盘加载并缓存),然后再以一定频率刷新到磁盘，从而减少磁盘IO,加快处理速度
-**缓冲池一页为单位，底层采用链表数据结构管理** 
+**缓冲池一页为单位，底层采用链表数据结构管理**
     * free page:空闲page
     * clean page:被使用page,数据没有被修改过
     * dirty page:脏页，被使用page,数据被修改过
@@ -977,7 +977,7 @@ SELECT object_type,object_scheme,object_name,lock_type,lock_duration from perfor
 
 #### Log Buffer
 > 日志缓存区，保存要写入到磁盘中的log日志数据(redo log,undo log),默认大小为16MB,日志缓冲区的日志会定期刷新到磁盘中
-**参数:** 
+**参数:**
     * innodb_log_buffer_size:缓冲区大小
     * innodb_flush_log_at_trx_commit:日志刷新到磁盘时机
         * 0 -- 每秒将日志写入并刷新磁盘一次
@@ -987,11 +987,11 @@ SELECT object_type,object_scheme,object_name,lock_type,lock_duration from perfor
 ### 磁盘结构
 #### System Tablespace
 > Change Buffer的存储区域
-**参数:innodb_data_file_path** 
+**参数:innodb_data_file_path**
 
 #### File-Per-Table Tablespaces
 > 每个表的文件表空间包含单个InnoDB表的数据和索引，并存储在文件系统的单个数据文件中
-**参数:innodb_file_per_table** 
+**参数:innodb_file_per_table**
 
 #### General Tablespaces
 > 通用表空间
@@ -1081,7 +1081,7 @@ CREATE TABLE xxx ... TABLESPACE ts_name;
 | max_trx_id     | 预分配事务ID,当前最大事务ID+1 |
 | creator_trx_id | ReadView创建者的事务ID        |
 
-**版本链数据访问规则** 
+**版本链数据访问规则**
 * trx_id == creator_trx_id ? **可以**访问该版本
     * 数据由当前事务更改
 * trx_id < min_trx_id ? **可以**访问该版本

@@ -243,7 +243,7 @@ gdb也是GNU软件系统社区提供的调试器
     (gdb) b 函数名	#停止在函数的第一行
     ```
 
-    
+
 
 * 设置普通断点到某个非当前文件上
 
@@ -272,10 +272,10 @@ Num     Type           Disp Enb Address            What
 1       breakpoint     keep y   0x0000000000400cb5 in main() at test.cpp:12
 2       breakpoint     keep y   0x0000000000400cbd in main() at test.cpp:13
 3       breakpoint     keep y   0x0000000000400cec in main() at test.cpp:18
-4       breakpoint     keep y   0x00000000004009a5 in insertionSort(int*, int) 
+4       breakpoint     keep y   0x00000000004009a5 in insertionSort(int*, int)
                                                    at insert.cpp:8
 5       breakpoint     keep y   0x0000000000400cdd in main() at test.cpp:16
-6       breakpoint     keep y   0x00000000004009e5 in insertionSort(int*, int) 
+6       breakpoint     keep y   0x00000000004009e5 in insertionSort(int*, int)
                                                    at insert.cpp:16
 #Num: 断点的编号，删除断点或者设置断点状态的时候都需要使用
 #Enb: 当前断点的状态，y 表示断点可用，n 表示断点不可用
@@ -288,7 +288,7 @@ Num     Type           Disp Enb Address            What
 # delete == del == d
 # 需要 info b 查看断点的信息, 第一列就是编号
 (gdb) d 断点的编号1 [断点编号2 ...]
-# 举例: 
+# 举例:
 (gdb) d 1          # 删除第1个断点
 (gdb) d 2 4 6      # 删除第2,4,6个断点
 
@@ -307,7 +307,7 @@ Num     Type           Disp Enb Address            What
     # disable == dis
     # 设置某一个或者某几个断点无效
     (gdb) dis 断点1的编号 [断点2的编号 ...]
-    
+
     # 设置某个区间断点无效
     (gdb) dis 断点1编号-断点n编号
     ```
@@ -318,12 +318,12 @@ Num     Type           Disp Enb Address            What
     # enable == ena
     # 设置某一个或者某几个断点有效
     (gdb) ena 断点1的编号 [断点2的编号 ...]
-    
+
     # 设置某个区间断点有效
     (gdb) ena 断点1编号-断点n编号
     ```
 
-    
+
 
 ### 5.调试命令
 
@@ -355,12 +355,12 @@ Num     Type           Disp Enb Address            What
     ``` shell
     # print == p
     (gdb) p 变量名
-    
+
     # 如果变量是一个整形, 默认对应的值是以10进制格式输出, 其他格式请参考上表
     (gdb) p/fmt 变量名
     ```
 
-    
+
 
 ##### 5.2.2打印变量类型
 
@@ -415,10 +415,10 @@ Num Enb Expression
     (gdb) undisplay num [num1 ...]
     # num1 - numN 表示一个范围
     (gdb) undisplay num1-numN
-    
+
     (gdb) delete display num [num1 ...]
     (gdb) delete display num1-numN
-    
+
     #举例
     # 查看显示列表
     (gdb) info display
@@ -427,10 +427,10 @@ Num Enb Expression
     1:   y  i
     2:   y  array[i]
     3:   y  /x array[i]
-    
+
     # 删除变量显示, 需要使用 info display 得到的变量/表达式编号
     (gdb) undisplay 1 2
-    
+
     # 查看显示列表, 只剩下一个了
     (gdb) i display
     Auto-display expressions now in effect:
@@ -456,7 +456,7 @@ Num Enb Expression
     (gdb) disable display num1-numN
     ```
 
-    
+
 
 #### 5.4单步调试
 
@@ -507,4 +507,3 @@ Num Enb Expression
 # 假设某个变量的值在程序中==90的概率是5%, 这时候可以直接通过命令将这个变量值设置为90
 (gdb) set var 变量名=值
 ```
-

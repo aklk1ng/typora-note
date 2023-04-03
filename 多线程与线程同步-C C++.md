@@ -58,7 +58,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 在创建过程中一定要保证编写的线程函数与规定的函数指针类型一致：void *(*start_routine) (void *):
 
 ```` c
-// pthread_create.c 
+// pthread_create.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -89,10 +89,10 @@ int main()
     {
         printf("i = %d\n", i);
     }
-    
+
     // 休息, 休息一会儿...
     // sleep(1);
-    
+
     return 0;
 }
 ````
@@ -100,7 +100,7 @@ int main()
 编译测试程序，会看到如下错误信息：
 
 ``` shell
-$ gcc pthread_create.c 
+$ gcc pthread_create.c
 /tmp/cctkubA6.o: In function `main':
 pthread_create.c:(.text+0x7f): undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
@@ -111,7 +111,7 @@ collect2: error: ld returned 1 exit status
 ``` shell
 # pthread_create 函数的定义在某一个库中, 编译的时候需要加库名 pthread
 $ gcc pthread_create.c -lpthread
-$ ./a.out 
+$ ./a.out
 子线程创建成功, 线程ID: 139712560109312
 我是主线程, 线程ID: 139712568477440
 i = 0
@@ -127,4 +127,3 @@ i = 2
 目前的解决方案：让子线程执行完毕，主线程再退出，可以在主线程中添加挂起函数 **sleep();**
 
 ### 3.线程退出
-

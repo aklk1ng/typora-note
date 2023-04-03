@@ -140,7 +140,7 @@ echo 'LANG=en_US.UTF-8'  > /etc/locale.conf		#向 /etc/locale.conf 导入内容
 
 ``` bash
 vim /etc/hostname		#直接写入保存即可
-vim /etc/hosts			
+vim /etc/hosts
 #加入以下内容：
 127.0.0.1   localhost
 ::1         localhost
