@@ -651,17 +651,18 @@ _ SELECT 查询的序列号，表示查询中执行 SELECT 子句或者是操作
 _ select_type
 _ 表示 SELECT 的类型，常见的取值有 SIMPLE(简单表，即不使用表连接或子查询)，PRIMARY(主查询，即外层的查询)，UNION(UNION 中的第二个或者后面的查询语句)，SUBQUERY(SELECT/WHERE 之后包括了子查询)
 _ type
-_ 表示连接类型，性能由好到差的连接类型为 NULL,system,const,eq*ref,ref,range,index,all
-* possible*key
-* 显示可能应用在这张表上的索引，一个或多个
-_ key
-_ 实际使用的索引
-_ key_len
-_ 表示索引中使用的字节数，该值为索引字段最大可能长度，并非实际使用长度
-_ rows
-_ MySQL 认为必须要执行查询的行数，在 InnoDB 引擎的表中，是一个估计值
-_filtered
-_ 表示返回结果的行户占需读取行数的百分比，该值越大越好
+_ 表示连接类型，性能由好到差的连接类型为 NULL,system,const,eq\*ref,ref,range,index,all
+
+- possible\*key
+- 显示可能应用在这张表上的索引，一个或多个
+  _ key
+  _ 实际使用的索引
+  _ key_len
+  _ 表示索引中使用的字节数，该值为索引字段最大可能长度，并非实际使用长度
+  _ rows
+  _ MySQL 认为必须要执行查询的行数，在 InnoDB 引擎的表中，是一个估计值
+  _filtered
+  _ 表示返回结果的行户占需读取行数的百分比，该值越大越好
 
 ## MySQL 优化
 
