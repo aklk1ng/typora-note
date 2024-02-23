@@ -2,45 +2,45 @@
 
 <!-- vim-markdown-toc GFM -->
 
-* [1. 连接网络(wifi)](#1-连接网络wifi)
-* [2.更新系统时钟](#2更新系统时钟)
-* [3.分区](#3分区)
-* [4.格式化](#4格式化)
-* [5.挂载](#5挂载)
-* [6.镜像源的选择](#6镜像源的选择)
-* [7.安装系统](#7安装系统)
-* [8.生成 fstab 文件](#8生成-fstab-文件)
-* [9.切换到安装好的系统](#9切换到安装好的系统)
-* [10.时区设置](#10时区设置)
-* [11.设置 Locale 进行本地化](#11设置-locale-进行本地化)
-* [12.设置主机名](#12设置主机名)
-* [13.设置 root 用户密码](#13设置-root-用户密码)
-* [14.安装微码](#14安装微码)
-* [15.安装引导程序](#15安装引导程序)
-* [16.完成无界面安装](#16完成无界面安装)
-* [17.再次配置](#17再次配置)
-* [18.开启 32 位支持库](#18开启-32-位支持库)
-* [19.添加普通用户](#19添加普通用户)
-* [20.添加 archlinuxcn 源(非必要,只是多一些国人更常用的软件)](#20添加-archlinuxcn-源非必要只是多一些国人更常用的软件)
-* [21.安装显卡驱动](#21安装显卡驱动)
-* [22.安装桌面环境](#22安装桌面环境)
-* [23.设置系统中文](#23设置系统中文)
-* [24.安装 yay](#24安装-yay)
-* [25.重启（欢迎来到 archlinux :joy:）](#25重启欢迎来到-archlinux-joy)
-* [26.安装输入法(有一些可能是找不到的)](#26安装输入法有一些可能是找不到的)
-* [27.启动蓝牙](#27启动蓝牙)
+- [1. 连接网络(wifi)](#1-连接网络wifi)
+- [2.更新系统时钟](#2更新系统时钟)
+- [3.分区](#3分区)
+- [4.格式化](#4格式化)
+- [5.挂载](#5挂载)
+- [6.镜像源的选择](#6镜像源的选择)
+- [7.安装系统](#7安装系统)
+- [8.生成 fstab 文件](#8生成-fstab-文件)
+- [9.切换到安装好的系统](#9切换到安装好的系统)
+- [10.时区设置](#10时区设置)
+- [11.设置 Locale 进行本地化](#11设置-locale-进行本地化)
+- [12.设置主机名](#12设置主机名)
+- [13.设置 root 用户密码](#13设置-root-用户密码)
+- [14.安装微码](#14安装微码)
+- [15.安装引导程序](#15安装引导程序)
+- [16.完成无界面安装](#16完成无界面安装)
+- [17.再次配置](#17再次配置)
+- [18.开启 32 位支持库](#18开启-32-位支持库)
+- [19.添加普通用户](#19添加普通用户)
+- [20.添加 archlinuxcn 源(非必要,只是多一些国人更常用的软件)](#20添加-archlinuxcn-源非必要只是多一些国人更常用的软件)
+- [21.安装显卡驱动](#21安装显卡驱动)
+- [22.安装桌面环境](#22安装桌面环境)
+- [23.设置系统中文](#23设置系统中文)
+- [24.安装 yay](#24安装-yay)
+- [25.重启（欢迎来到 archlinux :joy:）](#25重启欢迎来到-archlinux-joy)
+- [26.安装输入法(有一些可能是找不到的)](#26安装输入法有一些可能是找不到的)
+- [27.启动蓝牙](#27启动蓝牙)
 
 <!-- vim-markdown-toc -->
 
 ### 1. 连接网络(wifi)
 
 ```bash
-iwctl 											#进入交互命令行
-device list										#列出设备名，例如网卡wlan0
-staction 										#扫描网络
-station wlan0 get-networks						#列出可连接的网络
-station wlan0 connect THE-WIRELESS-NAME			#进行连接，之后输入密码即可
-exit											#退出
+iwctl                                           #进入交互命令行
+device list                                     #列出设备名，例如网卡wlan0
+staction                                        #扫描网络
+station wlan0 get-networks                        #列出可连接的网络
+station wlan0 connect THE-WIRELESS-NAME            #进行连接，之后输入密码即可
+exit                                            #退出
 ```
 
 可以使用**ping**命令检验
@@ -48,8 +48,8 @@ exit											#退出
 ### 2.更新系统时钟
 
 ```bash
-timedatectl set-ntp 1/true		#将系统时间与网络时间进行同步
-timedatectl status				#检查服务状态
+timedatectl set-ntp 1/true        #将系统时间与网络时间进行同步
+timedatectl status                #检查服务状态
 ```
 
 ### 3.分区
@@ -60,8 +60,8 @@ timedatectl status				#检查服务状态
 - 根目录：直接将剩余的磁盘分给它，在 Manjaro 的安装中，我试过将它分为/，/home，/opt,但是效果不是很好，有意思的是，采取这种方案无法查看/home 目录的内存大小（可以都尝试一下
 
 ```bash
-fdisk -l			#对硬盘进行扫描，注意好需要分的空间
-cfdisk /device		#这里才用可视化的工具进行分区，也可以用fdisk,但对于较麻烦的可视化跟友好
+fdisk -l            #对硬盘进行扫描，注意好需要分的空间
+cfdisk /device        #这里才用可视化的工具进行分区，也可以用fdisk,但对于较麻烦的可视化跟友好
 ```
 
 ### 4.格式化
@@ -69,8 +69,8 @@ cfdisk /device		#这里才用可视化的工具进行分区，也可以用fdisk,
 与上对应
 
 ```bash
-mkfs.vfat			#格式化为引导目录
-mkfs.ext4			#linux系统普通目录格式
+mkfs.vfat            #格式化为引导目录
+mkfs.ext4            #linux系统普通目录格式
 ```
 
 ### 5.挂载
@@ -79,7 +79,7 @@ mkfs.ext4			#linux系统普通目录格式
 
 ```bash
 mount /dev/sdax /mnt
-mkdir /mnt/boot				#创建boot目录
+mkdir /mnt/boot                #创建boot目录
 mount /dev/sdax /mnt/boot
 ```
 
@@ -92,9 +92,9 @@ vim /etc/pacman.d/mirrorlist
 新版的镜像会提供不同国家的镜像源，直接将合适的源粘贴到首行即可，这里提供几个源
 
 ```bash
-Server = https://mirrors.163.com/archlinux/$repo/os/$arch				#163源
-Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch			#中科大
-Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch	#清华
+Server = https://mirrors.163.com/archlinux/$repo/os/$arch                #163源
+Server = https://mirrors.ustc.edu.cn/archlinux/$repo/os/$arch            #中科大
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinux/$repo/os/$arch    #清华
 Server = https://mirror.0xem.ma/arch/$repo/os/$arch    #北美洲地区:加拿大
 Server = https://mirror.aktkn.sg/archlinux/$repo/os/$arch    #东南亚地区:新加坡
 Server = https://archlinux.uk.mirror.allworldit.com/archlinux/$repo/os/$arch    #欧洲地区:英国
@@ -127,22 +127,22 @@ arch-chroot /mnt
 
 ```bash
 ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-hwclock --systohc		#对硬件进行时间设置，将正确的UTC时间写入硬件时间
+hwclock --systohc        #对硬件进行时间设置，将正确的UTC时间写入硬件时间
 ```
 
 ### 11.设置 Locale 进行本地化
 
 ```bash
 --使用vim进行编辑，后续才会进行下载(sudo pacman -S vim)
-vim /etc/locale.gen								#去掉 en_US.UTF-8 所在行以及 zh_CN.UTF-8 所在行的注释符号（#）
-locale-gen										#生成 locale
-echo 'LANG=en_US.UTF-8'  > /etc/locale.conf		#向 /etc/locale.conf 导入内容
+vim /etc/locale.gen                                #去掉 en_US.UTF-8 所在行以及 zh_CN.UTF-8 所在行的注释符号（#）
+locale-gen                                        #生成 locale
+echo 'LANG=en_US.UTF-8'  > /etc/locale.conf        #向 /etc/locale.conf 导入内容
 ```
 
 ### 12.设置主机名
 
 ```bash
-vim /etc/hostname		#直接写入保存即可
+vim /etc/hostname        #直接写入保存即可
 vim /etc/hosts
 #加入以下内容：
 127.0.0.1   localhost
@@ -168,7 +168,7 @@ pacman -S amd-ucode     #AMD
 ```bash
 pacman -S os-prober ntfs-3g grub efibootmgr   #grub是启动引导器，efibootmgr被 grub 脚本用来将启动项写入 NVRAM。
 grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub
-grub-mkconfig -o /boot/grub/grub.cfg			#生成 GRUB 所需的配置文件
+grub-mkconfig -o /boot/grub/grub.cfg            #生成 GRUB 所需的配置文件
 ```
 
 **os-prober 需要手动安装，在/etc/dafault/grub 中，取消 GRUB_DISABLE_OS_PROBER=false 的注释，这样在开机时进入 bios 中将 grub 的启动项设置为最高优先级，即可进入 grub 选择操作系统界面,并可以选择 windows 系统**
@@ -186,14 +186,14 @@ reboot              # 重启
 ### 17.再次配置
 
 ```bash
-systemctl enable NetworkManager										#允许网络服务
-systemctl start NetworkManager										#开启
-nmcli dev wifi list													#进行网络扫描
-nmcli dev wifi connect "THE-WIRELESS-NAME" password "THE-PASSWORD"	#进行连接
-dd if=/dev/zero of=/swapfile bs=1M count=512 status=progress		#设置交换分区（非必要）
-chmod 600 /swapfile			#设置权限
-mkswap /swapfile			#格式化
-swapon /swapfile			#启用swapfile
+systemctl enable NetworkManager                                        #允许网络服务
+systemctl start NetworkManager                                        #开启
+nmcli dev wifi list                                                    #进行网络扫描
+nmcli dev wifi connect "THE-WIRELESS-NAME" password "THE-PASSWORD"    #进行连接
+dd if=/dev/zero of=/swapfile bs=1M count=512 status=progress        #设置交换分区（非必要）
+chmod 600 /swapfile            #设置权限
+mkswap /swapfile            #格式化
+swapon /swapfile            #启用swapfile
 vim /etc/fstab
 #添加以下内容：/swapfile none swap defaults 0 0
 ```
@@ -201,17 +201,17 @@ vim /etc/fstab
 ### 18.开启 32 位支持库
 
 ```bash
-vim /etc/pacman.conf			#去掉[multilib]一节中两行的注释，来开启 32 位库支持
-pacman -Syyu					#最后:wq 保存退出，刷新 pacman 数据库
+vim /etc/pacman.conf            #去掉[multilib]一节中两行的注释，来开启 32 位库支持
+pacman -Syyu                    #最后:wq 保存退出，刷新 pacman 数据库
 ```
 
 ### 19.添加普通用户
 
 ```bash
-useradd -m -G wheel YOUR-NAME		#wheel为所属用户组
+useradd -m -G wheel YOUR-NAME        #wheel为所属用户组
 passwd YOUR-NAME
 pacman -S sudo
-sudo vim /etc/sudoers				#若还是无法修改需更改文件权限
+sudo vim /etc/sudoers                #若还是无法修改需更改文件权限
 取消wheel行的注释
 ```
 
@@ -224,14 +224,14 @@ sudo vim /etc/pacman.conf
 [archlinuxcn]
 Server = https://repo.archlinuxcn.org/$arch
 sudo pacman -Syy
-sudo pacman -S archlinuxcn-keyring				#添加软件签名，如果不介意签名，可以再添加一行 SigLevel = Never
+sudo pacman -S archlinuxcn-keyring                #添加软件签名，如果不介意签名，可以再添加一行 SigLevel = Never
 sudo pacman -Syyu
 ```
 
 ### 21.安装显卡驱动
 
 ```bash
-sudo pacman -S xf86-video-intel mesa		#intel用户,其他显卡可以在archlinux官网查询
+sudo pacman -S xf86-video-intel mesa        #intel用户,其他显卡可以在archlinux官网查询
 ```
 
 ### 22.安装桌面环境
@@ -240,9 +240,9 @@ sudo pacman -S xf86-video-intel mesa		#intel用户,其他显卡可以在archlinu
 
 ```bash
 --- kde
-sudo pacman -S xorg plasma kde-applications sddm network-manager-applet	#桌面基础包
-sudo systemctl enable sddm				#允许登陆欢迎服务
-sudo systemctl enable NetworkManager	#允许网络服务
+sudo pacman -S xorg plasma kde-applications sddm network-manager-applet    #桌面基础包
+sudo systemctl enable sddm                #允许登陆欢迎服务
+sudo systemctl enable NetworkManager    #允许网络服务
 ```
 
 **基础功能包(可选则性安装)**
@@ -273,13 +273,9 @@ LANG=zh_CN.UTF-8
 ### 24.安装 yay
 
 ```bash
-#对go进行换源,github相对来说好一些，实在不行修改hosts：
+#对go进行换源
 go env -w GO111MODULE=on
 go env -w GOPROXY=https://goproxy.cn,direct
-#or(推荐)：
-echo "export GO111MODULE=on" >> ~/.profile
-echo "export GOPROXY=https://goproxy.cn" >> ~/.profile
-source ~/.profile
 
 git clone https://aur.archlinux.org/yay.git
 cd yay
